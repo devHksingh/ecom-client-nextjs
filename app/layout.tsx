@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono,Black_Han_Sans, Montserrat } from "next/font/google";
 import "./globals.css";
+import StoreProvider from "./StoreProvider";
+import QueryProvider from "./QueryProvider";
 
 
 const geistSans = Geist({
@@ -41,7 +43,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${blackHanSans.variable} antialiased bg-stone-400`}
       >
-        {children}
+        <StoreProvider >
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </StoreProvider>
       </body>
     </html>
   );
