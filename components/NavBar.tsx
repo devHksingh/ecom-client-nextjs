@@ -1,19 +1,24 @@
-// components/Navbar.jsx
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
-import {  ChevronDown, CircleUserRound, Heart, Menu, Search, ShoppingCart, Store, X } from 'lucide-react';
+import {  ChevronDown, Menu, Search, Store, X } from 'lucide-react';
+import useAuth from '@/hook/useAuth';
+import Cart from './Cart';
+import Wishlist from './Wishlist'; 
+import NavUser from './NavUser';
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
-  // Mock navigation data
+  const {isLogin} = useAuth()
+  console.log("isLogin",isLogin);
+  
+
+  //  navigation data
   const navItems = [
-    // { 
-    //   name: 'Home', 
-    //   path: '/' 
-    // },
+    
     { 
       name: 'Clothing', 
       path: '/clothing',
@@ -49,6 +54,9 @@ const Navbar = () => {
       setOpenDropdown(index);
     }
   };
+  const handleLogout =()=>{
+    // TODO: call logout api
+  }
 
   return (
     <header className='bg-white'>
@@ -57,7 +65,7 @@ const Navbar = () => {
                 {/* logo */}
                 <div className='flex'>
                     <Link href={'/'}
-                    className='text-2xl font-bold text-indigo-600 flex items-center gap-1 flex-shrink-0'
+                    className='text-2xl font-bold text-indigo-600 flex items-center gap-1 flex-shrink-0  '
                     >
                         <Store />Shop
                     </Link>
@@ -107,7 +115,7 @@ const Navbar = () => {
                     ))}
                 </div>
                 {/* Destop userState */}
-                <div className='hidden sm:ml-6 sm:flex sm:items-center'>
+                <div className='hidden sm:ml-6 sm:flex sm:items-center sm:justify-evenly gap-4'>
                     {/* search Icon */}
                     {/* lodash */}
                     <form className='flex  relative  '>
@@ -120,17 +128,18 @@ const Navbar = () => {
                     {/* Cart Icon  */}
                     <div>
                         {/* User cart component */}
-                    <ShoppingCart />
+                    {/* <ShoppingCart /> */}
+                    <Cart/>
                     </div>
                     {/* wishlist icon */}
                     <div>
                         {/* User wishlist component */}
-                    <Heart />
+                        <Wishlist/>
                     </div>
                     {/* UserProfile */}
-                    <div>
+                    <div className=' self-center flex items-center '>
                         {/* User Profile component */}
-                    <CircleUserRound />
+                    <NavUser />
                     </div>
                 </div>
                 {/* Mobile menu button */}
@@ -177,16 +186,47 @@ const Navbar = () => {
                                                     {dropdownItem.name}
                                                 </Link>
                                                 ))}
+                                                
                                             </div>
+
                                             )}
+
                                         </div>
                                     ):(
                                         <Link href={item.path}
                                         className="block px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                                         onClick={() => setIsOpen(false)}>{item.name}</Link>
                                     )}
+                                    
                                 </div>
                             ))}
+                            {!isLogin && (
+                                <div>
+                                    <Link
+                                href={''}
+                                className="w-full flex justify-between items-center px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                                >
+                                    <span>SignIn</span>
+                                </Link>
+                                    <Link
+                                href={''}
+                                className="w-full flex justify-between items-center px-3 py-2 text-base bg-amber-400 font-medium text-gray-600 hover:bg-amber-500 hover:text-gray-800"
+                                >
+                                    <span>SignUp</span>
+                                </Link>
+                                </div>
+                            )}
+                            {isLogin &&(
+                                <div >
+                                    <Link
+                                        href={''}
+                                        className="w-full flex justify-between items-center px-3 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                                        >
+                                            <span>Profile</span>
+                                    </Link>
+                                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-100 hover:bg-red-500  bg-red-400 rounded">Logout</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
