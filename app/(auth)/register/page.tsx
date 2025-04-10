@@ -1,9 +1,10 @@
-
-
+'use client'
+import { Eye, EyeClosed } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 
 const RegisterPage = () => {
+    const [isPasswordHide,setIsPasswordHide] = useState(true)
   return (
     <div className='container flex min-h-screen'>
         {/* image */}
@@ -96,9 +97,29 @@ const RegisterPage = () => {
                                 <label htmlFor="email" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">Email address</label>
                             </div>
                             <div className="relative">
-                                <input id="password" name="password" type="password" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
                                 
-                                <label htmlFor="password" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">Password</label>
+                                <div className='flex'>
+                                    <input id="password" name="password" type={`${isPasswordHide?`password`:`text`}`} className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
+                                    <span className='absolute right-2 top-1.5 bg-white cursor-pointer'
+                                    onClick={()=>{
+                                        setIsPasswordHide(!isPasswordHide)
+                                    }}
+                                    >
+                                        {isPasswordHide?(
+                                            <EyeClosed />
+                                        ):(
+                                            <Eye />
+                                        ) }
+                                        
+                                        
+                                    </span>
+                                    <label htmlFor="password" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1 ">Password
+                                    
+                                </label>
+                                </div>
+                                
+                                
+                                
                             </div>
                             <div className="relative">
                                 <input id="confirmPassword" name="confirmPassword" type="password" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
