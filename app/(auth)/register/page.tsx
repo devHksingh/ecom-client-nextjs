@@ -1,11 +1,61 @@
 'use client'
+import { registerUser } from '@/http/api'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { Eye, EyeClosed } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import z from "zod"
+
+interface FormFields{
+    name:string,
+    email:string,
+    password:string,
+    confirmPassword:string
+}
+
+interface ErrorResponse{
+    message:string
+}
+
+const formSchema=z.object({
+    name:z.string().toLowerCase().trim().min(4,"Minimum four charcter required "),
+    email:z.string().email(),
+    password:z.string().min(6,"Password Must be 6 or more characters long"),
+    confirmPassword:z.string().min(6,"Password Must be 6 or more characters long")
+}).refine((data)=>data.password === data.confirmPassword,{
+    message:"Passwords don't match",
+    path:["confirmPassword"]
+
+})
 
 const RegisterPage = () => {
     const [isPasswordHide,setIsPasswordHide] = useState(true)
-  return (
+    const [errMsg,setErrMsg]=useState("")
+    const mutation = useMutation({
+        mutationFn:registerUser,
+        onSuccess:(response)=>{
+            console.log("On success mutation call",response);
+            
+        },
+        onError:(err:AxiosError<ErrorResponse>)=>{
+            console.log("mutation Error",err)
+            const errorMsg = err.response?.data.message || "Something went wrong.Try it again!"
+            setErrMsg(errorMsg)
+        }
+    })
+
+    const {register,handleSubmit,formState:{errors}} = useForm<FormFields>({
+        resolver:zodResolver(formSchema)
+    })
+    const onSubmit:SubmitHandler<FormFields>=(data)=>{
+        console.log(data);
+        mutation.mutate(data)
+    }
+
+    return (
     <div className='container flex min-h-screen'>
         {/* image */}
         <div className='hidden lg:flex items-center justify-center flex-1 bg-white text-black mt-12'>
@@ -84,22 +134,32 @@ const RegisterPage = () => {
                 <h1 className="text-3xl font-semibold mb-6 text-black text-center">Sign Up</h1>
                 <h2 className="text-sm font-semibold mb-6 text-gray-500 text-center">Join to Our Community with all time access and free </h2>
                 <div className='mt-4 flex flex-col lg:flex-row items-center justify-between lg:w-full '>
-                    <form className='space-y-6 rounded border border-sky-200  p-8 bg-white rounded-tr-4xl rounded-bl-4xl shadow lg:w-full'>
-                            
+                    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6 rounded border border-sky-200  p-8 bg-white rounded-tr-4xl rounded-bl-4xl shadow lg:w-full'>
+                    {mutation.isError && (
+                        <span className="self-center mb-1 text-sm text-red-500">{errMsg}</span>
+                    )}
                             <div className="relative">
-                                <input id="userName" name="userName" type="text" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
+                                <input id="userName"  type="text"
+                                {...register("name")}
+                                className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
                                 
                                 <label htmlFor="userName" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">User name</label>
+                                {errors.name && <span className="text-sm font-medium text-red-600"> {errors.name.message}</span> }
                             </div>
                             <div className="relative">
-                                <input id="email" name="email" type="email" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
+                                <input id="email" 
+                                {...register("email")}
+                                type="email" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
                                 
                                 <label htmlFor="email" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">Email address</label>
+                                {errors.email && <span className="text-sm font-medium text-red-600"> {errors.email.message}</span>}
                             </div>
                             <div className="relative">
                                 
                                 <div className='flex'>
-                                    <input id="password" name="password" type={`${isPasswordHide?`password`:`text`}`} className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
+                                    <input id="password" 
+                                    {...register('password')}
+                                    type={`${isPasswordHide?`password`:`text`}`} className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
                                     <span className='absolute right-2 top-1.5 bg-white cursor-pointer'
                                     onClick={()=>{
                                         setIsPasswordHide(!isPasswordHide)
@@ -116,17 +176,16 @@ const RegisterPage = () => {
                                     <label htmlFor="password" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1 ">Password
                                     
                                 </label>
-                                </div>
-                                
-                                
-                                
+                                </div>  
+                                {errors.password && <span className="text-sm font-medium text-red-600">{errors.password.message}</span>}
                             </div>
                             <div className="relative">
-                                <input id="confirmPassword" name="confirmPassword" type="password" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
+                                <input id="confirmPassword" {...register('confirmPassword')} type="password" className="peer h-10 w-full border border-sky-400 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600 p-2 rounded" placeholder="john@doe.com" />
                                 
                                 <label htmlFor="confirmPassword" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">Confirm password</label>
+                                {errors.confirmPassword && <span className="text-sm font-medium text-red-600">{errors.confirmPassword.message}</span>}
                             </div>
-                            <button className='bg-sky-400 p-1 text-stone-50 rounded px-2 hover:bg-sky-500 shadow w-full'>Submit</button>
+                            <button className='bg-sky-400 p-1 text-stone-800 font-medium hover:text-stone-900 rounded px-2 hover:bg-sky-500 shadow w-full'>Submit</button>
                             <div className="">
                                 <p className="text-sm ">
                                 By continuing, I agree to the Terms of Use & Privacy Policy
@@ -149,16 +208,13 @@ const RegisterPage = () => {
             </div>
         </div>
     </div>
-  )
+    )
 }
 
 export default RegisterPage
 
 /*
-name: z.string().trim(),
-    email: z.string().trim().email({ message: 'Invalid email address' }),
-    password: z.string().trim().min(6, { message: "Must be 6 or more characters long" }),
-    confirmPassword: z.string().trim()
+
     space-y-6 rounded border border-sky-500 p-8 bg-white rounded-tr-4xl lg:w-1/2
     mt-4 flex flex-col lg:flex-row items-center justify-between
 */
