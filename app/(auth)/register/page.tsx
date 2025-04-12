@@ -3,7 +3,7 @@ import { registerUser } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
-import { Eye, EyeClosed } from 'lucide-react'
+import { Eye, EyeClosed, LoaderCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
@@ -189,7 +189,13 @@ const RegisterPage = () => {
                                 <label htmlFor="confirmPassword" className="absolute left-1 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm bg-slate-50 px-1">Confirm password</label>
                                 {errors.confirmPassword && <span className="text-sm font-medium text-red-600">{errors.confirmPassword.message}</span>}
                             </div>
-                            <button className='bg-sky-400 p-1 text-stone-800 font-medium hover:text-stone-900 rounded px-2 hover:bg-sky-500 shadow w-full'>Submit</button>
+                            <button 
+                            className={` bg-cta hover:bg-cta-active transition-colors text-cta-text font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${mutation.isPending?'cursor-not-allowed opacity-45':''}`}
+                            type="submit" disabled={mutation.isPending} >
+                            {mutation.isPending && <span>
+                                <LoaderCircle strokeWidth={2} className="text-bg-cta animate-spin" /></span>}
+                            Submit
+                            </button>
                             <div className="">
                                 <p className="text-sm ">
                                 By continuing, I agree to the Terms of Use & Privacy Policy
@@ -216,4 +222,3 @@ const RegisterPage = () => {
 }
 
 export default RegisterPage
-
