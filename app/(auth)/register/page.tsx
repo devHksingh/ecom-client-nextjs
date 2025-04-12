@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { Eye, EyeClosed } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import z from "zod"
@@ -34,14 +35,15 @@ const formSchema=z.object({
 const RegisterPage = () => {
     const [isPasswordHide,setIsPasswordHide] = useState(true)
     const [errMsg,setErrMsg]=useState("")
+    const router = useRouter()
     const mutation = useMutation({
         mutationFn:registerUser,
-        onSuccess:(response)=>{
-            console.log("On success mutation call",response);
+        onSuccess:()=>{
             
+            router.push('/login')
         },
         onError:(err:AxiosError<ErrorResponse>)=>{
-            console.log("mutation Error",err)
+            
             const errorMsg = err.response?.data.message || "Something went wrong.Try it again!"
             setErrMsg(errorMsg)
         }
@@ -133,11 +135,13 @@ const RegisterPage = () => {
             <div className='max-w-md w-full p-6  rounded-lg shadow-md bg-sky-100'>
                 <h1 className="text-3xl font-semibold mb-6 text-black text-center">Sign Up</h1>
                 <h2 className="text-sm font-semibold mb-6 text-gray-500 text-center">Join to Our Community with all time access and free </h2>
+                
                 <div className='mt-4 flex flex-col lg:flex-row items-center justify-between lg:w-full '>
+                {mutation.isError && (
+                    <span className=" mb-1 text-sm text-red-500 text-center">{errMsg}</span>
+                )}
                     <form onSubmit={handleSubmit(onSubmit)} className='space-y-6 rounded border border-sky-200  p-8 bg-white rounded-tr-4xl rounded-bl-4xl shadow lg:w-full'>
-                    {mutation.isError && (
-                        <span className="self-center mb-1 text-sm text-red-500">{errMsg}</span>
-                    )}
+                    
                             <div className="relative">
                                 <input id="userName"  type="text"
                                 {...register("name")}
@@ -213,8 +217,3 @@ const RegisterPage = () => {
 
 export default RegisterPage
 
-/*
-
-    space-y-6 rounded border border-sky-500 p-8 bg-white rounded-tr-4xl lg:w-1/2
-    mt-4 flex flex-col lg:flex-row items-center justify-between
-*/
