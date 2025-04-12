@@ -190,11 +190,11 @@ const RegisterPage = () => {
                                 {errors.confirmPassword && <span className="text-sm font-medium text-red-600">{errors.confirmPassword.message}</span>}
                             </div>
                             <button 
-                            className={` bg-cta hover:bg-cta-active transition-colors text-cta-text font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${mutation.isPending?'cursor-not-allowed opacity-45':''}`}
+                            className={` bg-sky-400 hover:bg-sky-500 transition-colors text-stone-800 hover:text-stone-900 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${mutation.isPending?'cursor-not-allowed opacity-45':''}`}
                             type="submit" disabled={mutation.isPending} >
-                            {mutation.isPending && <span>
+                                {mutation.isPending && <span>
                                 <LoaderCircle strokeWidth={2} className="text-bg-cta animate-spin" /></span>}
-                            Submit
+                                Submit
                             </button>
                             <div className="">
                                 <p className="text-sm ">
@@ -205,7 +205,7 @@ const RegisterPage = () => {
                                     Already have an Account?{" "}
                                     <Link
                                         href={'/login'}
-                                        className="font-semibold cursor-pointer"
+                                        className="font-semibold cursor-pointer hover:border-b-2 hover:border-amber-400"
                                         
                                     >
                                     Try Login
