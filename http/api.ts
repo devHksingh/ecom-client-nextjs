@@ -1,3 +1,5 @@
+
+import { getAccessToken, getRefreshToken } from "@/utils/token";
 import axios from "axios";
 
 
@@ -7,6 +9,22 @@ const api = axios.create({
         'Content-Type': 'application/json'
     }
 })
+
+
+api.interceptors.request.use(
+    (config) => {
+        const accessToken = getAccessToken();
+        const refreshToken = getRefreshToken();
+
+        if (accessToken && refreshToken) {
+            config.headers.Authorization = accessToken;
+            config.headers.refreshToken = refreshToken;
+        }
+
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 const registerUser = async (data: { email: string; password: string; name: string; confirmPassword: string }) => {
     console.log("BACKEND_URL", process.env.NEXT_PUBLIC_BACKEND_URL);
