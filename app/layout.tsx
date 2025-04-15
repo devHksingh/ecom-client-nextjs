@@ -3,6 +3,7 @@ import { Geist, Geist_Mono,Black_Han_Sans, Montserrat } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "./StoreProvider";
 import QueryProvider from "./QueryProvider";
+import ToastContainer from "@/components/Toast/ToastContainer";
 // import NavBar from "@/components/NavBar";
 
 
@@ -48,6 +49,7 @@ export default function RootLayout({
           <QueryProvider>
             {/* <NavBar/> */}
             {children}
+            <ToastContainer />
           </QueryProvider>
         </StoreProvider>
       </body>
