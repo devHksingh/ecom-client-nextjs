@@ -41,8 +41,14 @@ const logoutUser = async () => {
     return api.post('/api/v1/users/logout')
 }
 
+const homePageProduct = async () => {
+    const res = await api.get('/api/v1/products/product')
+    return res
+}
+
 export {
     registerUser,
     login,
-    logoutUser
+    logoutUser,
+    homePageProduct
 }
