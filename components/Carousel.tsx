@@ -69,14 +69,14 @@ const Carousel = ({ items, autoSlideInterval = 5000 }: ImageCarouselProps) => {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {items.map((item) => (
-            <div key={item.id} className="min-w-full h-full relative flex flex-col lg:flex-row items-center justify-around bg-black/10 gap-2 ">
+            <div key={item.id} className="min-w-full h-full relative flex flex-col lg:flex-row items-center justify-around bg-black/5 gap-2 ">
               <div className={`order-1 lg:order-2   relative  aspect-auto `}>
                 <Image
-                  className="w-auto  min-h-72 p-2 object-cover shadow-2xl  aspect-auto transition-all duration-300 hover:scale-105 bg-amber-50/50 rounded"
+                  className="w-auto  min-h-80 p-2 object-cover shadow-2xl  aspect-auto transition-all duration-300 hover:scale-105 bg-amber-50/50 rounded-lg"
                   src={item.imgSrc}
                   alt={item.title}
                   width={150}
-                  height={150}
+                  height={450}
                 />
                 <div className="absolute -bottom-18 left-1/2 w-full -translate-x-1/2 transform">
                 <div
