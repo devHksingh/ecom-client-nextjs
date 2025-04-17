@@ -6,6 +6,7 @@ export interface ProductProps {
     totalStock: number,
     brand: string,
     image: string,
+    currency: string,
     category: string[],
     salePrice: number,
     createdAt: string,
