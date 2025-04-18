@@ -81,7 +81,7 @@ export default function Home() {
     },
     {
       id: 7,
-      imgSrc: "/assets/twilightGray.png",
+      imgSrc: "/assets/twilightGray.webp",
       title: "Silence the World, Hear the Music",
       description:
         "With active noise cancellation and long battery life, tune in to what matters most.",
