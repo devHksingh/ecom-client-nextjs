@@ -46,9 +46,15 @@ const homePageProduct = async () => {
     return res
 }
 
+const userCustomizeProduct = async ()=>{
+    const res = await api.get('/api/v1/products/customizeProduct')
+    return res
+}
+
 export {
     registerUser,
     login,
     logoutUser,
-    homePageProduct
+    homePageProduct,
+    userCustomizeProduct
 }
