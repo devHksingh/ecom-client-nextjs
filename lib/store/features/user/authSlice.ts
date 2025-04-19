@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 export interface AuthState {
     isLogin: boolean,
     refreshToken: string,
@@ -29,7 +29,7 @@ export const authSlice = createSlice({
             state.userName = userName
             state.useremail = useremail
         },
-        updateAccessToken: (state, action) => {
+        updateAccessToken: (state, action: PayloadAction<{ accessToken: string }>) => {
             const { accessToken } = action.payload
             state.accessToken = accessToken
         },
