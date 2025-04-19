@@ -1,5 +1,6 @@
 "use client";
 import Carousel from "@/components/Carousel";
+import FeaturesSection from "@/components/FeaturesSection1";
 import ListOfProduct from "@/components/ListOfProduct";
 import PromoSection from "@/components/PromoSection";
 import useAuth from "@/hook/useAuth";
@@ -199,6 +200,9 @@ export default function Home() {
       </section>
       <section className="mt-18 ">
         <PromoSection />
+      </section>
+      <section className="mt-18 ">
+        <FeaturesSection />
       </section>
       {isUserLogin && (
         <section className="mt-8 ">
