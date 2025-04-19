@@ -12,7 +12,7 @@
   padding-inline: 2rem;
 }
 
-/* @custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -130,4 +130,4 @@
   body {
     @apply bg-background text-foreground;
   }
-} */
+}
