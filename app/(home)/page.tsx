@@ -1,12 +1,12 @@
-// import Image from "next/image";
 "use client";
 import Carousel from "@/components/Carousel";
-import FeaturesSection from "@/components/FeaturesSection1";
 import ListOfProduct from "@/components/ListOfProduct";
 import PromoSection from "@/components/PromoSection";
-// import ImageCarousel from "@/components/ImageCarousel";
+import useAuth from "@/hook/useAuth";
 import useToast from "@/hook/useToast";
-import { homePageProduct } from "@/http/api";
+import { homePageProduct, userCustomizeProduct } from "@/http/api";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarSync, RefreshCcw, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,11 +15,57 @@ export default function Home() {
   const [mostBoughtProduct, setMostBoughtProduct] = useState([]);
   const [mostExpensiveProduct, setMostExpensiveProduct] = useState([]);
   const [leastExpensiveProduct, setLeastExpensiveProduct] = useState([]);
+  const [usersProduct, setUsersProduct] = useState([]);
+  const [isUserLogin, setIsUserLogin] = useState(false);
+  const userState = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  useAuth();
   const toast = useToast();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["homePageProducts"],
     queryFn: homePageProduct,
+    staleTime: 40 * 60 * 1000,
+    refetchInterval: 41 * 60 * 1000,
+    refetchIntervalInBackground: true,
   });
+  const { data: customizeUserProduct } = useQuery({
+    queryKey: ["customizeProduct"],
+    queryFn: userCustomizeProduct,
+    staleTime: 40 * 60 * 1000,
+    refetchInterval: 41 * 60 * 1000,
+    refetchIntervalInBackground: true,
+    enabled: userState.isLogin,
+  });
+  useEffect(() => {
+    if (userState.isLogin) {
+      setIsUserLogin(true);
+    }
+  }, [userState.isLogin]);
+  useEffect(() => {
+    if (customizeUserProduct) {
+      setUsersProduct(customizeUserProduct.data.firstTwelveProduct);
+      console.log(customizeUserProduct);
+      console.log("isLogin", customizeUserProduct.data.isAccessTokenExp);
+      if (customizeUserProduct.data.isAccessTokenExp) {
+        const { refreshToken, userId, userName, useremail } = userState;
+        dispatch(
+          updateAccessToken({
+            accessToken: customizeUserProduct.data.accessToken,
+          })
+        );
+        sessionStorage.clear();
+        const user = {
+          id: userId,
+          name: userName,
+          email: useremail,
+          refreshToken,
+          accessToken: customizeUserProduct.data.accessToken,
+        };
+        sessionStorage.setItem("user", JSON.stringify(user));
+      }
+      //
+    }
+  }, [customizeUserProduct, dispatch, userState]);
   useEffect(() => {
     if (data) {
       setMostBoughtProduct(data.data.top8MostBoughtProduct);
@@ -154,9 +200,14 @@ export default function Home() {
       <section className="mt-18 ">
         <PromoSection />
       </section>
-      <section className="mt-8 ">
-        <FeaturesSection />
-      </section>
+      {isUserLogin && (
+        <section className="mt-8 ">
+          <ListOfProduct
+            products={usersProduct}
+            headTtitle="Get It Just the Way You Want"
+          />
+        </section>
+      )}
       <section className="">
         <ListOfProduct
           products={mostBoughtProduct}
@@ -175,7 +226,7 @@ export default function Home() {
           headTtitle="Great Deals, Small Price"
         />
       </section>
-      
+
       <div className="flex flex-col space-y-4">
         <button
           onClick={showSuccessToast}
