@@ -1,0 +1,231 @@
+import { ProductProps } from "@/types/product";
+import { Heart, PencilIcon, ShoppingCart, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+export default async function SingleProductPage({
+  params,
+}: {
+  params: Promise<{ productId: string }>;
+}) {
+  const { productId } = await params;
+  console.log("productId", productId);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${productId}`,
+    {
+     
+      next: {
+        revalidate: 3600, // Revalidate every hour
+      },
+    }
+  );
+  let product: ProductProps | undefined;
+  let productCategory:string =""
+  if (res.ok) {
+    const productRes = await res.json();
+    product = productRes.productDetail;
+  }
+  if(product){
+    const categories = product.category
+    if(categories.includes("Electronics")){
+        productCategory ="Electronics"
+    }
+    if(categories.includes("Grocery")){
+        productCategory ="Grocery"
+    }
+    if(categories.includes("Clothing")){
+        productCategory ="Clothing"
+    }
+    if(categories.includes("Headphone")){
+        productCategory ="Headphone"
+    }
+    if(categories.includes("Footwear")){
+        productCategory ="Footwear"
+    }
+    if(categories.includes("Watch")){
+        productCategory ="Watch"
+    }
+    if(categories.includes("Laptop")){
+        productCategory ="Laptop"
+    }
+  }
+  const formatPrice = (amount:number, currency:string) => {
+    const symbols: Record<string, string> = {
+      'USD': '$',
+      'EUR': '€',
+      'INR': '₹',
+       'RUB':'₽',
+       'GBP':'£'
+    };
+    
+    return `${symbols[currency]|| '₹' } ${amount}`;
+  };
+  const timeAgo = (date: string) => {
+    return   new Date(date).toLocaleString();
+  }
+
+  return (
+    <div className=" container">
+      {product && (
+        <div className="pt-6 antialiased ">
+        <div aria-label="Breadcrumb">
+          <ol role="list" className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8">
+            
+            <li><Link href={''}  className="font-medium text-stone-800">Home</Link></li>
+            <li className="text-stone-400">\</li>
+            <li><Link href={''} className="font-medium capitalize text-stone-800">{productCategory}</Link></li>
+            <li className="text-stone-400">\</li>
+            <li><Link href={''} className="font-medium text-stone-500">{product.title}</Link></li>
+          </ol>
+        </div>
+        {/* Image  */}
+        <div className="grid max-w-2xl grid-cols-1 mx-auto antialiased sm:px-6 lg:max-w-7xl lg:px-8 lg:grid-cols-2">
+          {/* Image  */}
+          
+          {/* <div className="flex justify-center w-1/2 mx-auto lg:w-full">
+          
+          <Image
+                src={product.image}
+                alt={product.title}
+                fill
+                className="object-contain"
+                // sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+          </div> */}
+          <div className="flex justify-center items-center bg-white p-6 rounded-lg">
+            <div className="relative h-72 w-72 md:h-96 md:w-96 lg:w-[50rem] lg:h-[36rem]">
+              <Image
+                src={product.image}
+                alt={product.title}
+                fill
+                className="object-contain transition-all duration-300 ease-in-out hover:scale-120 "
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+            </div>
+          </div>
+          {/* content */}
+          <div>
+            <div className="max-w-2xl px-4 pt-10 mx-auto space-x-2 sm:px-6 lg:max-w-7xl lg:px-8">
+              <div className="flex flex-col border-b-2">
+              
+                <h1 className="text-4xl font-bold space-y-2">{product.title}</h1>
+                <span >{product.brand}</span>
+                
+                <h2 className="mt-2 mb-2 text-lg font-semibold">Categories:</h2>
+                <div className="flex flex-wrap gap-2">
+                    {product.category.map((cat:string, index:number) => (
+                    <span key={index} className="px-3 py-1 text-sm text-gray-700 bg-gray-200 rounded-full">
+                        {cat}
+                    </span>
+                    ))}
+                </div>
+                  <div className="flex items-center gap-4 pt-4 mb-6 mt-6">
+                  
+                    <button 
+                    // onClick={()=>handleUpdateWishListState(product.id)}
+                    className="flex px-2 py-1.5 bg-stone-500 rounded-md hover:bg-stone-600 text-white gap-2">
+                      <Heart />Add To Favorites
+                      </button>
+                    <button 
+                    // onClick={()=>handleUpdateCartState(product.id)}
+                    className="flex px-2 py-1.5 bg-blue-500 rounded-md hover:bg-blue-700 text-white gap-2">
+                      <ShoppingCart />Add To Cart
+                    </button>
+                  </div>
+              </div>
+              <div className="p-1 mt-1">
+                <p className="mb-6 text-gray-600 ">{product?.description}</p>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
+    </div>
+  );
+}
+// https://fakestoreapi.com
+// app/products/[id]/page.tsx
+
+// import { notFound } from "next/navigation";
+
+// interface Params {
+//   params: {
+//     productId: string;
+//   };
+// }
+
+// const SingleProductPage = async ({ params }: { params: { id: string } }) => {
+//     const { id } = await params
+//   let product;
+//   const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
+//     // Next.js 15 recommended fetch options
+//     next: {
+//       revalidate: 3600, // Revalidate every hour
+//     },
+//   });
+//   if (!res.ok) return notFound();
+//   console.log("res",res);
+//   if(res.ok){
+//     product = await res.json();
+//   }
+
+//   //   const res = await fetch(
+//   //     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${productId}`
+//   //   );
+
+//   //   if (!res.ok) return notFound();
+
+//   //   const product = await res.json();
+
+//   return (
+//     <div className="p-4">
+//       <h1 className="text-2xl font-bold mb-2">{product.title}</h1>
+//       <p className="text-gray-700">{product.price}</p>
+//     </div>
+//   );
+// };
+
+// export default SingleProductPage;
+
+// // const SingleProductPage = async ({params}:{params:Promise<{productId:string}>}) => {
+
+// //     const productId =  (await params).productId
+// //     let product
+// //     if(productId){
+// //         const res = await fetch(`https://jsonplaceholder.typicode.com/users/1${productId}`)
+// //         product = await res.json()
+// //     }
+// //   return (
+// //     <div>SingleProductPage{productId}
+// //     <h1>{product.name}</h1>
+
+// //     </div>
+// //   )
+// // }
+
+// // export default SingleProductPage
+// // https://nextjs.org/docs/messages/sync-dynamic-apis
+/**
+ <Image
+                src={product.image}
+                alt={product.title}
+                fill
+                className="object-contain"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+<div aria-label="Breadcrumb">
+          <ol role="list" className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8">
+            
+            <li><Link href={''}  className="font-medium text-stone-800">Home</Link></li>
+            <li className="text-stone-400">\</li>
+            <li><Link href={''} className="font-medium capitalize text-stone-800">{productCategory}</Link></li>
+            <li className="text-stone-400">\</li>
+            <li><Link href={''} className="font-medium text-stone-500">{product.title}</Link></li>
+          </ol>
+        </div>
+  */
