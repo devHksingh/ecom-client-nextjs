@@ -1,5 +1,6 @@
+import ReadMoreText from "@/components/ReadMoreText";
 import { ProductProps } from "@/types/product";
-import { Heart, PencilIcon, ShoppingCart, Trash2 } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -49,20 +50,31 @@ export default async function SingleProductPage({
         productCategory ="Laptop"
     }
   }
-  const formatPrice = (amount:number, currency:string) => {
-    const symbols: Record<string, string> = {
-      'USD': '$',
-      'EUR': '€',
-      'INR': '₹',
-       'RUB':'₽',
-       'GBP':'£'
-    };
-    
-    return `${symbols[currency]|| '₹' } ${amount}`;
+  const formatPrice = (amount: number, currency: string) => {
+    let formatedPrice: string;
+    switch (currency) {
+      case "USD":
+        formatedPrice = `${"$"}${amount}`;
+        break;
+      case "EUR":
+        formatedPrice = `${"$"}${amount}`;
+        break;
+      case "INR":
+        formatedPrice = `${"₹"}${amount}`;
+        break;
+      case "RUB":
+        formatedPrice = `${"₽"}${amount}`;
+        break;
+      case "GBP":
+        formatedPrice = `${"£"}${amount}`;
+        break;
+      default:
+        formatedPrice = `${"₹"}${amount}`;
+        break;
+    }
+    return formatedPrice;
   };
-  const timeAgo = (date: string) => {
-    return   new Date(date).toLocaleString();
-  }
+  
 
   return (
     <div className=" container">
@@ -112,6 +124,16 @@ export default async function SingleProductPage({
               
                 <h1 className="text-4xl font-bold space-y-2">{product.title}</h1>
                 <span >{product.brand}</span>
+
+                <div className="flex flex-wrap items-center gap-2 md:gap-6 pt-2 font-mono text-2xl font-extrabold text-gray-900 sm:text-3xl">
+                            <span className="mr-2 text-2xl font-bold shrink-0">Price : {formatPrice(product.price-product.salePrice,product.currency)}</span>
+                        {product.salePrice < product.price && (
+                            <span className="text-lg line-through font-medium shrink-0">{formatPrice(product.price,product.currency)}</span>
+                            
+                        )}
+                        <span className="md:ml-4 text-lg text-orange-400 ">{formatPrice(product.salePrice,product.currency)} OFF</span>
+                    
+                    </div>
                 
                 <h2 className="mt-2 mb-2 text-lg font-semibold">Categories:</h2>
                 <div className="flex flex-wrap gap-2">
@@ -121,6 +143,7 @@ export default async function SingleProductPage({
                     </span>
                     ))}
                 </div>
+                {/* <h2 className="flex items-center gap-6 pt-2 font-mono text-2xl font-extrabold text-gray-900 sm:text-3xl ">${product.price} <span className="flex "></span></h2> */}
                   <div className="flex items-center gap-4 pt-4 mb-6 mt-6">
                   
                     <button 
@@ -136,7 +159,8 @@ export default async function SingleProductPage({
                   </div>
               </div>
               <div className="p-1 mt-1">
-                <p className="mb-6 text-gray-600 ">{product?.description}</p>
+                {/* <p className="mb-6 text-gray-600 ">{product?.description}</p> */}
+                <ReadMoreText text={product.description}/>
               </div>
               
             </div>
