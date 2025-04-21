@@ -161,7 +161,7 @@ export default async function SingleProductPage({
               <li>
                 <Link
                   // TODO : ADD CATEGORY LINK
-                  href={""}
+                  href={`/category/${productCategory}`}
                   className="font-medium capitalize text-stone-800 hover:cursor-pointer"
                 >
                   {productCategory}
