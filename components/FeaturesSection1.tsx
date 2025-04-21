@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 const FeaturesSection = () => {
   const category = [
     {
@@ -22,8 +23,8 @@ const FeaturesSection = () => {
     },
     {
       image: "/assets/Boldfit_Badminton_Shoes-removebg-preview.webp",
-      title: "Footware",
-      describtion: "Footware category",
+      title: "Footwear",
+      describtion: "Footwear category",
       id: "4",
     },
     {
@@ -44,7 +45,7 @@ const FeaturesSection = () => {
       <div className="mx-auto max-w-2xl px-4 py-0 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8 ">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">
           Shop by Category
-          {/* {headTtitle} */}
+          
         </h2>
 
         <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
@@ -55,16 +56,16 @@ const FeaturesSection = () => {
                 alt={cate.describtion}
                 width={200}
                 height={200}
-                className="aspect-square w-full rounded-md  object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80 mix-blend-darken   hover:cursor-pointer bg-radial-[at_25%_25%] from-white to-zinc-900 to-75%"
+                className="aspect-square w-full rounded-md  object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80 mix-blend-darken hover:cursor-pointer bg-radial-[at_25%_25%] from-white to-zinc-900 to-75%"
               />
               <div className="mt-4 flex justify-between">
                 <div>
-                  <h3 className="text-xl text-gray-100   absolute bottom-12 left-1/2 -translate-x-1/2 font-bold lg:text-4xl">
+                  <h3 className="text-xl text-gray-100 absolute bottom-12 left-1/2 -translate-x-1/2 font-bold lg:text-4xl ">
                     {/* TODO: INSERT Link category[id] */}
-                    <a href={""}>
+                    <Link href={`/category/${cate.title}`}>
                       <span aria-hidden="true" className="absolute inset-0 " />
                       {cate.title}
-                    </a>
+                    </Link>
                   </h3>
                   {/* <p className="mt-1 text-sm text-gray-500">{product.brand}</p> */}
                 </div>
