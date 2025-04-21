@@ -1,5 +1,6 @@
-import ListOfProduct from "@/components/ListOfProduct";
+// import ListOfProduct from "@/components/ListOfProduct";
 import ReadMoreText from "@/components/ReadMoreText";
+import ViewSimilarProduct from "@/components/ViewSimilarProduct";
 import { ProductProps } from "@/types/product";
 import { Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
@@ -39,7 +40,7 @@ export default async function SingleProductPage({
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${productId}`,
     {
       next: {
-        revalidate: 3600, // Revalidate every hour
+        revalidate: 600, // Revalidate every 10 MIN
       },
     }
   );
@@ -74,6 +75,7 @@ export default async function SingleProductPage({
     }
   }
   let categoryData: ProductProps[] = [];
+  let totalCategoryProduct: number = 0;
   if (product) {
     const data = {
       limit: 8,
@@ -90,7 +92,7 @@ export default async function SingleProductPage({
         },
         body: JSON.stringify(data),
         next: {
-          revalidate: 3600, // optional if you want caching
+          revalidate: 3600, //  caching
         },
       }
     );
@@ -110,6 +112,7 @@ export default async function SingleProductPage({
       console.log("cate", pes.products);
       console.log("cate", pes);
       categoryData = pes.products;
+      totalCategoryProduct = pes.total;
     }
   }
   const formatPrice = (amount: number, currency: string) => {
@@ -254,6 +257,7 @@ export default async function SingleProductPage({
                     ))}
                   </div>
                   {/* <h2 className="flex items-center gap-6 pt-2 font-mono text-2xl font-extrabold text-gray-900 sm:text-3xl ">${product.price} <span className="flex "></span></h2> */}
+
                   <div className="flex items-center gap-4 pt-4 mb-6 mt-6">
                     <button
                       // onClick={()=>handleUpdateWishListState(product.id)}
@@ -264,6 +268,7 @@ export default async function SingleProductPage({
                     </button>
                     <button
                       // onClick={()=>handleUpdateCartState(product.id)}
+                      // TODO : NO CART BTN DISPLAY AT TOTAL STOCK === 0
                       className="flex px-2 py-1.5 bg-blue-500 rounded-md hover:bg-blue-700 text-white gap-2"
                     >
                       <ShoppingCart />
@@ -280,94 +285,19 @@ export default async function SingleProductPage({
           </div>
         </div>
       )}
-      {categoryData.length && (
-        <ListOfProduct
-          headTtitle="Customers also purchased "
+      {categoryData.length && product && (
+        // <ListOfProduct
+        //   headTtitle="Customers also purchased "
+        //   products={categoryData}
+        // />
+        <ViewSimilarProduct
+          headTtitle="Customers also purchased"
           products={categoryData}
+          total={totalCategoryProduct}
+          category={product.category}
         />
       )}
     </div>
   );
 }
-// https://fakestoreapi.com
-// app/products/[id]/page.tsx
 
-// import { notFound } from "next/navigation";
-
-// interface Params {
-//   params: {
-//     productId: string;
-//   };
-// }
-
-// const SingleProductPage = async ({ params }: { params: { id: string } }) => {
-//     const { id } = await params
-//   let product;
-//   const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
-//     // Next.js 15 recommended fetch options
-//     next: {
-//       revalidate: 3600, // Revalidate every hour
-//     },
-//   });
-//   if (!res.ok) return notFound();
-//   console.log("res",res);
-//   if(res.ok){
-//     product = await res.json();
-//   }
-
-//   //   const res = await fetch(
-//   //     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/${productId}`
-//   //   );
-
-//   //   if (!res.ok) return notFound();
-
-//   //   const product = await res.json();
-
-//   return (
-//     <div className="p-4">
-//       <h1 className="text-2xl font-bold mb-2">{product.title}</h1>
-//       <p className="text-gray-700">{product.price}</p>
-//     </div>
-//   );
-// };
-
-// export default SingleProductPage;
-
-// // const SingleProductPage = async ({params}:{params:Promise<{productId:string}>}) => {
-
-// //     const productId =  (await params).productId
-// //     let product
-// //     if(productId){
-// //         const res = await fetch(`https://jsonplaceholder.typicode.com/users/1${productId}`)
-// //         product = await res.json()
-// //     }
-// //   return (
-// //     <div>SingleProductPage{productId}
-// //     <h1>{product.name}</h1>
-
-// //     </div>
-// //   )
-// // }
-
-// // export default SingleProductPage
-// // https://nextjs.org/docs/messages/sync-dynamic-apis
-/**
- <Image
-                src={product.image}
-                alt={product.title}
-                fill
-                className="object-contain"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
-<div aria-label="Breadcrumb">
-          <ol role="list" className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8">
-            
-            <li><Link href={''}  className="font-medium text-stone-800">Home</Link></li>
-            <li className="text-stone-400">\</li>
-            <li><Link href={''} className="font-medium capitalize text-stone-800">{productCategory}</Link></li>
-            <li className="text-stone-400">\</li>
-            <li><Link href={''} className="font-medium text-stone-500">{product.title}</Link></li>
-          </ol>
-        </div>
-  */
