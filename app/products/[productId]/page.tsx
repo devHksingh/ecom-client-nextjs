@@ -5,7 +5,6 @@ import { Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-
 // async function getProduct(id: string) {
 //   try {
 //     const res = await fetch(
@@ -109,6 +108,7 @@ export default async function SingleProductPage({
     if (response.ok) {
       // const cateData = await res.json()
       console.log("cate", pes.products);
+      console.log("cate", pes);
       categoryData = pes.products;
     }
   }
@@ -157,7 +157,7 @@ export default async function SingleProductPage({
               <li className="text-stone-400">\</li>
               <li>
                 <Link
-                // TODO : ADD CATEGORY LINK
+                  // TODO : ADD CATEGORY LINK
                   href={""}
                   className="font-medium capitalize text-stone-800 hover:cursor-pointer"
                 >
@@ -229,6 +229,17 @@ export default async function SingleProductPage({
                     </span>
                   </div>
 
+                  <span
+                    className={`px-3 py-1 text-sm font-medium  rounded-full inline-block w-[20%] text-center mt-2 ${
+                      product.totalStock < 10
+                        ? `text-red-700 bg-red-100`
+                        : `text-lime-700 bg-lime-100`
+                    }`}
+                  >
+                    InStock{" "}
+                    {product.totalStock < 10 ? `${product.totalStock}` : ``}{" "}
+                  </span>
+
                   <h2 className="mt-2 mb-2 text-lg font-semibold">
                     Categories:
                   </h2>
@@ -270,7 +281,10 @@ export default async function SingleProductPage({
         </div>
       )}
       {categoryData.length && (
-        <ListOfProduct headTtitle="Customers also purchased " products={categoryData} />
+        <ListOfProduct
+          headTtitle="Customers also purchased "
+          products={categoryData}
+        />
       )}
     </div>
   );
