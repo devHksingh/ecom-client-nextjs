@@ -46,9 +46,12 @@ const homePageProduct = async () => {
     return res
 }
 
-const userCustomizeProduct = async ()=>{
+const userCustomizeProduct = async () => {
     const res = await api.get('/api/v1/products/customizeProduct')
     return res
+}
+const fetchProductByCategoryWithLimit = async (data: { limit: number, skip: number, category: string[] }) => {
+    return api.post('/api/v1/products/getProductByCategoryWithLimit', data)
 }
 
 export {
@@ -56,5 +59,6 @@ export {
     login,
     logoutUser,
     homePageProduct,
-    userCustomizeProduct
+    userCustomizeProduct,
+    fetchProductByCategoryWithLimit
 }
