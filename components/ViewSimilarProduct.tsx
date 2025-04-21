@@ -48,7 +48,7 @@ const ViewSimilarProduct = ({
       {total > 8 && (
         <div className=" absolute bottom-14 lg:bottom-10 lg:right-28 right-12">
             {/* TODO: ADD Similar category link */}
-          <Button variant={'ghost'}><Link href={''} >View More</Link></Button>
+          <Button variant={'ghost'}><Link href={`/category/${productCategory}`} >View More</Link></Button>
         </div>
       )}
     </div>
