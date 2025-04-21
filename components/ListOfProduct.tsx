@@ -1,5 +1,6 @@
 import { ProductProps } from "@/types/product";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 interface product {
@@ -47,22 +48,25 @@ const ListOfProduct = ({ products, headTtitle }: product) => {
                 src={product.image}
                 alt={product.title}
                 width={150}
-                height={1501}
-                className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
+                height={150}
+                className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80  hover:cursor-pointer"
               />
               <div className="mt-4 flex justify-between">
                 <div>
                   <h3 className="text-sm text-gray-700 ">
                     {/* TODO: INSERT Link product[id] */}
-                    <a href={""}>
+                    <Link href={`/products/${product._id}`}>
                       <span aria-hidden="true" className="absolute inset-0 " />
                       {product.title}
-                    </a>
+                    </Link>
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">{product.brand}</p>
                 </div>
                 <p className="text-sm font-medium text-gray-900 ">
-                   {formatPrice((product.price - product.salePrice),product.currency)}
+                  {formatPrice(
+                    product.price - product.salePrice,
+                    product.currency
+                  )}
                 </p>
               </div>
             </div>
