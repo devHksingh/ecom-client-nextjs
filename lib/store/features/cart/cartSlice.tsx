@@ -1,8 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface CartItem {
-  productId: number;
+  productId: string;
   quantity: number;
+  imageUrl: string;
+  title: string;
+  price: number;
+  brand: string;
 }
 
 const initialState: CartItem[] = [];
@@ -13,21 +17,30 @@ export const cartSlice = createSlice({
   reducers: {
     addCart: (
       state,
-      action: PayloadAction<{ productId: number; quantity: number }>
+      action: PayloadAction<{
+        productId: string;
+        quantity: number;
+        imageUrl: string;
+        title: string;
+        price: number;
+        brand: string;
+      }>
     ) => {
-      const { productId, quantity } = action.payload;
+      const { productId, quantity, brand, imageUrl, price, title } =
+        action.payload;
       const existingProduct = state.find(
         (item) => item.productId === productId
       );
       if (existingProduct) {
         existingProduct.quantity = quantity;
       } else {
-        state.push({ productId, quantity: 1 });
+        // state.push({ productId, quantity: 1, brand, imageUrl, price, title });
+        state.push({ productId, quantity, brand, imageUrl, price, title });
       }
     },
     removeCartProduct: (
       state,
-      action: PayloadAction<{ productId: number }>
+      action: PayloadAction<{ productId: string }>
     ) => {
       return state.filter(
         (item) => item.productId !== action.payload.productId
@@ -35,7 +48,7 @@ export const cartSlice = createSlice({
     },
     removeProductQuantity: (
       state,
-      action: PayloadAction<{ productId: number }>
+      action: PayloadAction<{ productId: string }>
     ) => {
       const existingProduct = state.find(
         (item) => item.productId === action.payload.productId
