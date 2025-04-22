@@ -56,11 +56,11 @@ const FeaturesSection = () => {
                 alt={cate.describtion}
                 width={200}
                 height={200}
-                className="aspect-square w-full rounded-md  object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80 mix-blend-darken hover:cursor-pointer bg-radial-[at_25%_25%] from-white to-zinc-900 to-75%"
+                className="aspect-square w-full rounded-md  object-cover  lg:aspect-auto lg:h-80 mix-blend-darken  bg-radial-[at_25%_25%] from-white to-zinc-900 to-75% sepia-10"
               />
               <div className="mt-4 flex justify-between">
-                <div>
-                  <h3 className="text-xl text-gray-100 absolute bottom-12 left-1/2 -translate-x-1/2 font-bold lg:text-4xl ">
+                <div className=" ">
+                  <h3 className="text-xl text-stone-800 absolute bottom-12 left-1/2 -translate-x-1/2 font-bold lg:text-4xl w-[88%] text-center bg-amber-400/80 py-2  hover:bg-amber-500/80 rounded-xl shadow-2xl ">
                     {/* TODO: INSERT Link category[id] */}
                     <Link href={`/category/${cate.title}`}>
                       <span aria-hidden="true" className="absolute inset-0 " />
