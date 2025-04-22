@@ -1,4 +1,5 @@
 import ProductPagination from "@/components/ProductPagination";
+import Link from "next/link";
 
 export default async function CategoryProductPage({
   params,
@@ -8,6 +9,9 @@ export default async function CategoryProductPage({
   const { category } = await params;
   const initialSkip = 0;
   const limit = 12;
+  if (category) {
+    console.log("search category: ", category);
+  }
 
   const data = {
     limit: 12,
@@ -36,8 +40,32 @@ export default async function CategoryProductPage({
     console.log("apidata", apiData);
   }
   return (
-    <div>
-      {/* <h1 className="text-2xl font-bold">Products</h1> */}
+    <div className=" container">
+      <div className="mt-8" aria-label="Breadcrumb">
+        <ol
+          role="list"
+          className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
+        >
+          <li>
+            <Link
+              href={"/"}
+              className="font-medium text-stone-800 hover:cursor-pointer"
+            >
+              Home
+            </Link>
+          </li>
+          <li className="text-stone-400">\</li>
+          <li>
+            <Link
+              // TODO : ADD CATEGORY LINK
+              href={`/category/${category}`}
+              className="font-medium capitalize text-stone-500 hover:cursor-pointer"
+            >
+              {category}
+            </Link>
+          </li>
+        </ol>
+      </div>
       <ProductPagination
         initialProducts={apiData.products}
         initialSkip={initialSkip}
