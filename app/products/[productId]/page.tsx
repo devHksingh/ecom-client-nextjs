@@ -1,8 +1,9 @@
 // import ListOfProduct from "@/components/ListOfProduct";
+import ProductBtn from "@/components/ProductBtn";
 import ReadMoreText from "@/components/ReadMoreText";
 import ViewSimilarProduct from "@/components/ViewSimilarProduct";
 import { ProductProps } from "@/types/product";
-import { Heart, ShoppingCart } from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -258,7 +259,7 @@ export default async function SingleProductPage({
                   </div>
                   {/* <h2 className="flex items-center gap-6 pt-2 font-mono text-2xl font-extrabold text-gray-900 sm:text-3xl ">${product.price} <span className="flex "></span></h2> */}
 
-                  <div className="flex items-center gap-4 pt-4 mb-6 mt-6">
+                  {/* <div className="flex items-center gap-4 pt-4 mb-6 mt-6">
                     <button
                       // onClick={()=>handleUpdateWishListState(product.id)}
                       className="flex px-2 py-1.5 bg-stone-500 rounded-md hover:bg-stone-600 text-white gap-2"
@@ -274,7 +275,15 @@ export default async function SingleProductPage({
                       <ShoppingCart />
                       Add To Cart
                     </button>
-                  </div>
+                  </div> */}
+                  <ProductBtn
+                    id={product._id}
+                    brand={product.brand}
+                    title={product.title}
+                    imageUrl={product.image}
+                    price={(product.price - product.salePrice)}
+                    totalStock={product.totalStock}
+                  />
                 </div>
                 <div className="p-1 mt-1">
                   {/* <p className="mb-6 text-gray-600 ">{product?.description}</p> */}
@@ -300,4 +309,3 @@ export default async function SingleProductPage({
     </div>
   );
 }
-
