@@ -54,11 +54,17 @@ const fetchProductByCategoryWithLimit = async (data: { limit: number, skip: numb
     return api.post('/api/v1/products/getProductByCategoryWithLimit', data)
 }
 
+const getCart = async () => {
+    const res = await api.get('/api/v1/cart/getCart')
+    return res
+}
+
 export {
     registerUser,
     login,
     logoutUser,
     homePageProduct,
     userCustomizeProduct,
-    fetchProductByCategoryWithLimit
+    fetchProductByCategoryWithLimit,
+    getCart
 }
