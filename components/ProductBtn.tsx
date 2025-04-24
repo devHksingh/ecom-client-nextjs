@@ -21,6 +21,10 @@ interface ProductBtnProps {
   totalStock: number;
   price: number;
 }
+interface CartProducts {
+  id: string;
+  quantity: number;
+}
 
 const ProductBtn = ({
   id,
@@ -35,8 +39,7 @@ const ProductBtn = ({
     useState(false);
   const [productQuantity, setProductQuantity] = useState(1);
   const userState = useAppSelector((state) => state.auth);
-//   const cartState = useAppSelector((state) => state.cart);
-//   const wishListState = useAppSelector((state) => state.wishList);
+
   const dispatch = useAppDispatch();
 
   const toast = useToast();
@@ -90,16 +93,115 @@ const ProductBtn = ({
     );
   };
 
+  // const handleAddToCart = () => {
+  //   if (isProductAddedToCart) {
+  //     dispatch(removeCartProduct({ productId: id }));
+  //     // removeToCartToast(title);
+  //     // remove product from cart
+  //     if (isLogin) {
+  //       // avoid breaking  app if the stored data is invalid
+  //       try {
+  //         const cartData = JSON.parse(
+  //           localStorage.getItem("loginUserCart") || "[]"
+  //         );
+  //         console.log("cart login data", cartData);
+  //         if (cartData.length > 0) {
+  //           const newCart: [] = cartData.filter(
+  //             (product: CartProducts) => product.id !== id
+  //           );
+  //           localStorage.removeItem("loginUserCart");
+  //           localStorage.setItem("loginUserCart", JSON.stringify(newCart));
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to parse cart:", error);
+  //       }
+  //     } else {
+  //       try {
+  //         const cartData = JSON.parse(
+  //           localStorage.getItem("logoutUserCart") || "[]"
+  //         );
+  //         if (cartData.length > 0) {
+  //           const newCart: [] = cartData.filter(
+  //             (product: CartProducts) => product.id !== id
+  //           );
+  //           localStorage.removeItem("logoutUserCart");
+  //           localStorage.setItem("logoutUserCart", JSON.stringify(newCart));
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to parse cart:", error);
+  //       }
+  //     }
+  //     removeToCartToast(title);
+  //   } else {
+  //     // add cart product
+  //     dispatch(
+  //       addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
+  //     );
+  //     // login || withoutLogin
+  //     if (isLogin) {
+  //       try {
+  //         const cartData = JSON.parse(
+  //           localStorage.getItem("loginUserCart") || "[]"
+  //         );
+  //         if (cartData.length > 0) {
+  //           const existingProduct: { id: string; quantity: number } =
+  //             cartData.filter((product: CartProducts) => product.id === id);
+  //           if (existingProduct) {
+  //             existingProduct.quantity += 1;
+  //             const cartProducts: CartProducts[] = cartData.filter(
+  //               (product: CartProducts) => product.id !== id
+  //             );
+  //             cartProducts.push(existingProduct);
+  //             localStorage.removeItem("loginUserCart");
+  //             localStorage.setItem(
+  //               "loginUserCart",
+  //               JSON.stringify(cartProducts)
+  //             );
+  //           } else {
+  //             cartData.push({ id: id, quantity: 1 });
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to parse cart:", error);
+  //       }
+  //     }
+  //     addToCartToast(title);
+  //   }
+  //   setIsProductAddedToCart(!isProductAddedToCart);
+  // };
+
   const handleAddToCart = () => {
+    const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+    let cartData: CartProducts[] = [];
+    try {
+      cartData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+    } catch (error) {
+      console.error("Failed to parse local storage cart data:", error);
+    }
     if (isProductAddedToCart) {
+      // remove from redux store
       dispatch(removeCartProduct({ productId: id }));
       removeToCartToast(title);
+      // Remove from localStorage
+      const updatedCart = cartData.filter((product) => product.id !== id);
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
     } else {
+      // add to redux store
       dispatch(
         addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
       );
       addToCartToast(title);
+      // if product already exists
+      const existingProduct = cartData.find((product) => product.id === id);
+      if (existingProduct) {
+        existingProduct.quantity += 1;
+      } else {
+        cartData.push({ id, quantity: 1 });
+      }
+      //  updated cart
+      localStorage.setItem(localStorageKey, JSON.stringify(cartData));
     }
+    // Toggle UI state
     setIsProductAddedToCart(!isProductAddedToCart);
   };
 
@@ -123,8 +225,71 @@ const ProductBtn = ({
     setIsProductAddedToWishlist(!isProductAddedToWishlist);
   };
 
-  const handleAddQuantity = () => {
-    if (productQuantity + 1 <= totalStock) {
+  // const handleAddQuantity = () => {
+  //   if (productQuantity + 1 <= totalStock) {
+  //     addCart({
+  //       brand,
+  //       imageUrl,
+  //       price,
+  //       productId: id,
+  //       quantity: productQuantity + 1,
+  //       title,
+  //     });
+  //     setProductQuantity((prev) => prev + 1);
+  //     if (isLogin) {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("loginUserCart") || "[]"
+  //       );
+  //       const existingProduct: { id: string; quantity: number } =
+  //         cartData.filter((product: CartProducts) => product.id === id);
+  //       if (existingProduct) {
+  //         existingProduct.quantity += 1;
+  //         const cartProducts: CartProducts[] = cartData.filter(
+  //           (product: CartProducts) => product.id !== id
+  //         );
+  //         cartProducts.push(existingProduct);
+  //         localStorage.removeItem("loginUserCart");
+  //         localStorage.setItem("loginUserCart", JSON.stringify(cartProducts));
+  //       } else {
+  //         cartData.push({ id: id, quantity: 1 });
+  //       }
+  //     } else {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("logoutUserCart") || "[]"
+  //       );
+  //       const existingProduct: { id: string; quantity: number } =
+  //         cartData.filter((product: CartProducts) => product.id === id);
+  //       if (existingProduct) {
+  //         existingProduct.quantity += 1;
+  //         const cartProducts: CartProducts[] = cartData.filter(
+  //           (product: CartProducts) => product.id !== id
+  //         );
+  //         cartProducts.push(existingProduct);
+  //         localStorage.removeItem("logoutUserCart");
+  //         localStorage.setItem("logoutUserCart", JSON.stringify(cartProducts));
+  //       } else {
+  //         cartData.push({ id: id, quantity: 1 });
+  //       }
+  //     }
+  //   } else {
+  //     toast.error(
+  //       "Stock running low",
+  //       "Kindly decrease product quanty.Or try it later!"
+  //     );
+  //   }
+  // };
+
+  const handleAddQuantity =()=>{
+    if (productQuantity + 1 > totalStock) {
+      toast.error(
+        "Stock running low",
+        "Kindly decrease product quantity. Or try it later!"
+      );
+      return;
+    }
+    setProductQuantity((prev) => prev + 1);
+    const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+    dispatch(
       addCart({
         brand,
         imageUrl,
@@ -132,26 +297,120 @@ const ProductBtn = ({
         productId: id,
         quantity: productQuantity + 1,
         title,
-      });
-      setProductQuantity((prev) => prev + 1);
-    } else {
-      toast.error(
-        "Stock running low",
-        "Kindly decrease product quanty.Or try it later!"
+      })
+    );
+    try {
+      const cartData: CartProducts[] = JSON.parse(
+        localStorage.getItem(localStorageKey) || "[]"
       );
-    }
-  };
+      const existingProduct = cartData.find((product) => product.id === id);
 
+      if (existingProduct) {
+        existingProduct.quantity += 1;
+      } else {
+        cartData.push({ id, quantity: 1 });
+      }
+
+      localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  }
+
+  // const handleRemoveQuantity = () => {
+  //   if (productQuantity - 1 === 0) {
+  //     dispatch(removeCartProduct({ productId: id }));
+  //     setIsProductAddedToCart(false);
+  //     setProductQuantity(0);
+  //     if (isLogin) {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("loginUserCart") || "[]"
+  //       );
+  //       const newProducts: { id: string; quantity: number } = cartData.filter(
+  //         (product: CartProducts) => product.id !== id
+  //       );
+  //       localStorage.removeItem("loginUserCart");
+  //       localStorage.setItem("loginUserCart", JSON.stringify(newProducts));
+  //     } else {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("logoutUserCart") || "[]"
+  //       );
+  //       const newProducts: { id: string; quantity: number } = cartData.filter(
+  //         (product: CartProducts) => product.id !== id
+  //       );
+  //       localStorage.removeItem("logoutUserCart");
+  //       localStorage.setItem("logoutUserCart", JSON.stringify(newProducts));
+  //     }
+  //     removeToCartToast(title);
+  //   } else {
+  //     setProductQuantity((prev) => prev - 1);
+  //     if (isLogin) {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("loginUserCart") || "[]"
+  //       );
+  //       const existingProduct: { id: string; quantity: number } =
+  //         cartData.filter((product: CartProducts) => product.id === id);
+  //       if (existingProduct) {
+  //         existingProduct.quantity -= 1;
+  //         const cartProducts: CartProducts[] = cartData.filter(
+  //           (product: CartProducts) => product.id !== id
+  //         );
+  //         cartProducts.push(existingProduct);
+  //         localStorage.removeItem("loginUserCart");
+  //         localStorage.setItem("loginUserCart", JSON.stringify(cartProducts));
+  //       }
+  //     } else {
+  //       const cartData = JSON.parse(
+  //         localStorage.getItem("logoutUserCart") || "[]"
+  //       );
+  //       const existingProduct: { id: string; quantity: number } =
+  //         cartData.filter((product: CartProducts) => product.id === id);
+  //       if (existingProduct) {
+  //         existingProduct.quantity -= 1;
+  //         const cartProducts: CartProducts[] = cartData.filter(
+  //           (product: CartProducts) => product.id !== id
+  //         );
+  //         cartProducts.push(existingProduct);
+  //         localStorage.removeItem("logoutUserCart");
+  //         localStorage.setItem("logoutUserCart", JSON.stringify(cartProducts));
+  //       }
+  //     }
+  //   }
+  // };
   const handleRemoveQuantity = () => {
-    if (productQuantity - 1 === 0) {
+    const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+    if(productQuantity -1 <=0){
       dispatch(removeCartProduct({ productId: id }));
       setIsProductAddedToCart(false);
       setProductQuantity(0);
       removeToCartToast(title);
-    } else {
-      setProductQuantity((prev) => prev - 1);
+      try {
+        const cartData: CartProducts[] = JSON.parse(
+          localStorage.getItem(localStorageKey) || "[]"
+        );
+        const updatedCart = cartData.filter((product) => product.id !== id);
+        localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      } catch (error) {
+        console.error("Error removing product from cart:", error);
+      }
+      return
     }
-  };
+    setProductQuantity((prev) => prev - 1);
+    try {
+      const cartData: CartProducts[] = JSON.parse(
+        localStorage.getItem(localStorageKey) || "[]"
+      );
+      const existingProduct = cartData.find((product) => product.id === id);
+      if(existingProduct){
+        existingProduct.quantity -= 1;
+        // TODO :CHECK
+        localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+
+  }
 
   return (
     <div>
@@ -222,28 +481,12 @@ const ProductBtn = ({
 
 export default ProductBtn;
 
-//   const handleAddToWishlist = () => {
-//     setIsProductAddedToWishlist(!isProductAddedToWishlist);
-//     if (!isProductAddedToWishlist) {
-//       dispatch(removeCartProduct({ productId: id }));
-//       removeToCartToast(title);
-//     } else {
-//       dispatch(
-//         addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
-//       );
-//       addToCartToast(title);
-//     }
-//   };
-
-//   const handleAddToCart = () => {
-//     setIsProductAddedToCart(!isProductAddedToCart);
-//     if (!isProductAddedToCart) {
-//       dispatch(removeCartProduct({ productId: id }));
-//       removeToCartToast(title);
-//     } else {
-//       dispatch(
-//         addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
-//       );
-//       addToCartToast(title);
-//     }
-//   };
+/*
+const loginUserCartItems = [];
+  const withOutLoginUserCartItems = [];
+  const loginUserWishlist = [];
+  const withoutLoginUserWishlist = [];
+  // const logincartData = JSON.parse(localStorage.getItem("loginUserCart") || "[]");
+  //   const cartState = useAppSelector((state) => state.cart);
+  //   const wishListState = useAppSelector((state) => state.wishList);
+*/
