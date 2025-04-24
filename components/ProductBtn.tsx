@@ -25,6 +25,9 @@ interface CartProducts {
   id: string;
   quantity: number;
 }
+interface WishListProducts{
+  id:string;
+}
 
 const ProductBtn = ({
   id,
@@ -204,12 +207,22 @@ const ProductBtn = ({
     // Toggle UI state
     setIsProductAddedToCart(!isProductAddedToCart);
   };
-
   const handleAddToWishlist = () => {
+    const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
+    let wishlistData: WishListProducts[] = [];
+    try {
+      wishlistData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+    } catch (error) {
+      console.error("Failed to parse local storage wishlist data:", error);
+    }
     if (isProductAddedToWishlist) {
+      // remove from redux store
       dispatch(removeProductFromWishlist({ productId: id }));
       removeToWishlistToast(title);
+      const updatedWishlist = wishlistData.filter((product)=>product.id !== id)
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedWishlist));
     } else {
+      // add to redux store
       dispatch(
         addProductToWishList({
           brand,
@@ -219,11 +232,34 @@ const ProductBtn = ({
           quantity: 1,
           title,
         })
+        
       );
       addToWishlistToast(title);
+      wishlistData.push({id:id})
+      localStorage.setItem(localStorageKey, JSON.stringify(wishlistData));
     }
     setIsProductAddedToWishlist(!isProductAddedToWishlist);
   };
+  // const handleAddToWishlist = () => {
+    
+  //   if (isProductAddedToWishlist) {
+  //     dispatch(removeProductFromWishlist({ productId: id }));
+  //     removeToWishlistToast(title);
+  //   } else {
+  //     dispatch(
+  //       addProductToWishList({
+  //         brand,
+  //         imageUrl,
+  //         price,
+  //         productId: id,
+  //         quantity: 1,
+  //         title,
+  //       })
+  //     );
+  //     addToWishlistToast(title);
+  //   }
+  //   setIsProductAddedToWishlist(!isProductAddedToWishlist);
+  // };
 
   // const handleAddQuantity = () => {
   //   if (productQuantity + 1 <= totalStock) {
