@@ -38,6 +38,7 @@ const ProductBtn = ({
   price,
 }: ProductBtnProps) => {
   const [isProductAddedToCart, setIsProductAddedToCart] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [isProductAddedToWishlist, setIsProductAddedToWishlist] =
     useState(false);
   const [productQuantity, setProductQuantity] = useState(1);
@@ -48,12 +49,24 @@ const ProductBtn = ({
   const toast = useToast();
 
   const { isLogin } = userState;
+  // Delaying toast until login status is determined
+    useEffect(() => {
+      if (typeof isLogin === "boolean") {
+        setAuthChecked(true);
+      }
+    }, [isLogin]);
 
+  // useEffect(() => {
+  //   if (!isLogin) {
+  //     toast.error("You are not login!", "Kindly sign in to get a deal. ");
+  //   }
+  // }, [isLogin, toast]);
   useEffect(() => {
-    if (!isLogin) {
-      toast.error("You are not login!", "Kindly sign in to get a deal. ");
-    }
-  }, [isLogin, toast]);
+      console.log("user login cart page", isLogin);
+      if (authChecked && !isLogin) {
+        toast.error("You are not login!", "Kindly sign in to get a deal.");
+      }
+    }, [authChecked, isLogin, toast]);
 
   useEffect(() => {
     if (totalStock < 10) {
