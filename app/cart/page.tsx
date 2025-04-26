@@ -1,11 +1,11 @@
 "use client";
 
 import useToast from "@/hook/useToast";
-import { addToCart, getCart, multilpeProductAddToCart } from "@/http/api";
+import { addToCart, getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -53,6 +53,7 @@ const CartPage = () => {
   const [cartStateProducts, setCartStateProducts] = useState<apiCartProducts[]>(
     []
   );
+  const queryClient = useQueryClient();
   const router = useRouter();
   const userState = useAppSelector((state) => state.auth);
   const cartState = useAppSelector((state) => state.cart);
@@ -249,8 +250,7 @@ const CartPage = () => {
   const mutation = useMutation({
     mutationFn: multilpeProductAddToCart,
     onSuccess: (response) => {
-      console.log("response mutation", response);
-      console.log("response.data", response.data);
+      
       const { isAccessTokenExp, cart } = response.data;
       if (isAccessTokenExp) {
         // TODO: Update token in localStorge and redux state
@@ -296,6 +296,19 @@ const CartPage = () => {
     }
   }, [isLogin, cartStateProducts]);
 
+  const productRemoveMutation = useMutation({
+    mutationFn:removeFromCart,
+    onSuccess:(response)=>{
+      console.log("productRemoveMutation response--",response);
+      queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
+      setFetchCartProduct(true);
+    }
+  })
+
+  const handleRemoveProduct = (productId:string)=>{
+    productRemoveMutation.mutate({productId})
+  }
+
   return (
     <div className=" container">
       {cartProducts && (
@@ -340,6 +353,7 @@ const CartPage = () => {
                       <button
                         type="button"
                         className="font-medium text-indigo-600 hover:text-indigo-500"
+                        onClick={()=>handleRemoveProduct(item.product._id)}
                       >
                         Remove
                       </button>
