@@ -1,7 +1,7 @@
 "use client";
 
 import useToast from "@/hook/useToast";
-import { addToCart, getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
+import { getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
@@ -12,16 +12,9 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
-interface CartProduct {
-  productId: string;
-  brand: string;
-  imageUrl: string;
-  title: string;
-  quantity: number;
-  price: number;
-  currency: string;
-}
+
 
 interface CartItemsPostReqProps {
   product: ProductProps;
@@ -32,21 +25,11 @@ interface apiCartProducts {
   id: string;
   quantity: number;
 }
-interface GetCartProps {
-  accessToken?: string;
-  cart: {
-    user: string;
-    totalItems: number;
-    totalAmount: number;
-    items: [product: ProductProps];
-  };
-}
+
 const CartPage = () => {
-  const [isUserLogin, setIsUserLogin] = useState<boolean>(false);
+  
   const [authChecked, setAuthChecked] = useState(false);
   const [fetchCartproduct, setFetchCartProduct] = useState(true);
-  const [isNewProductAddedToCart, setIsNewProductAddedToCart] =
-    useState<boolean>(false);
   const [cartProducts, setCartProducts] = useState<CartItemsPostReqProps[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -104,7 +87,7 @@ const CartPage = () => {
     }
   }, [authChecked, isLogin, router, toast]);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["cartProducts"],
     queryFn: getCart,
 
@@ -144,11 +127,11 @@ const CartPage = () => {
   //     setTotalQuantity(totalItems);
   //   }
   // }
+
   useEffect(() => {
     if (data as AxiosResponse) {
-      console.log("getCart---", data);
       const cartProducts: CartItemsPostReqProps[] = [];
-  
+
       if (data?.data) {
         const { isAccessTokenExp, cart } = data.data;
         if (isAccessTokenExp) {
@@ -177,8 +160,7 @@ const CartPage = () => {
         setTotalQuantity(totalItems);
       }
     }
-  }, [data, dispatch]); 
-  
+  }, [data, dispatch]);
 
   useEffect(() => {
     function synclocalstorageCart() {
@@ -250,7 +232,6 @@ const CartPage = () => {
   const mutation = useMutation({
     mutationFn: multilpeProductAddToCart,
     onSuccess: (response) => {
-      
       const { isAccessTokenExp, cart } = response.data;
       if (isAccessTokenExp) {
         // TODO: Update token in localStorge and redux state
@@ -297,21 +278,51 @@ const CartPage = () => {
   }, [isLogin, cartStateProducts]);
 
   const productRemoveMutation = useMutation({
-    mutationFn:removeFromCart,
-    onSuccess:(response)=>{
-      console.log("productRemoveMutation response--",response);
+    mutationFn: removeFromCart,
+    onSuccess: (response) => {
+      console.log("productRemoveMutation response--", response);
       queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
       setFetchCartProduct(true);
-    }
-  })
+      toast.success("Product is remove", "Product is remove from the cart.");
+    },
+  });
 
-  const handleRemoveProduct = (productId:string)=>{
-    productRemoveMutation.mutate({productId})
+  const handleRemoveProduct = (productId: string) => {
+    productRemoveMutation.mutate({ productId });
+  };
+
+  if (isLoading) {
+    toast.info("Fetching cart data", "Please wait we fecthig cart data ");
+    return (
+      <div className=" container">
+        <div className="flex justify-between items-center h-full">
+          <span>
+            <LoaderCircle
+              strokeWidth={2}
+              className="w-12 h-12 text-indigo-600 animate-spin"
+            />
+          </span>
+        </div>
+      </div>
+    );
+  }
+  if (isError) {
+    toast.error(
+      "Failed to fetch cart data",
+      "Something went wrong. Failed to fetch cart data."
+    );
+    return (
+      <div className=" container">
+        <div className="flex justify-center items-center h-[50vh] text-red-500 text-lg">
+          Something went wrong. Failed to fetch cart data.
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className=" container">
-      {cartProducts.length>0 && (
+      {cartProducts.length > 0 && (
         <div className="mt-16 flex flex-col lg:flex-row justify-between">
           <ul
             role="list"
@@ -353,7 +364,7 @@ const CartPage = () => {
                       <button
                         type="button"
                         className="font-medium text-indigo-600 hover:text-indigo-500"
-                        onClick={()=>handleRemoveProduct(item.product._id)}
+                        onClick={() => handleRemoveProduct(item.product._id)}
                       >
                         Remove
                       </button>
@@ -398,11 +409,12 @@ const CartPage = () => {
           </div>
         </div>
       )}
-      
-      
+
       {cartState.length === 0 && cartProducts.length === 0 && (
         <div className="mt-16">
-          <div className="text-center text-2xl text-red-500">No Product in cart</div>
+          <div className="text-center text-2xl text-red-500">
+            No Product in cart
+          </div>
         </div>
       )}
     </div>
@@ -438,7 +450,8 @@ export default CartPage;
   */
 // const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
 // const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
-{/* {cartState.length > 0 ? (
+{
+  /* {cartState.length > 0 ? (
         <div className="mt-16">
           <div className=" flow-root">
             <ul
@@ -494,4 +507,5 @@ export default CartPage;
         </div>
       ) : (
         <div>No Product in cart</div>
-      )} */}
+      )} */
+}
