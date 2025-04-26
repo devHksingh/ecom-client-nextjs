@@ -44,7 +44,7 @@ interface GetCartProps {
 const CartPage = () => {
   const [isUserLogin, setIsUserLogin] = useState<boolean>(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [fetchCartproduct, setFetchCartProduct] = useState(false);
+  const [fetchCartproduct, setFetchCartProduct] = useState(true);
   const [isNewProductAddedToCart, setIsNewProductAddedToCart] =
     useState<boolean>(false);
   const [cartProducts, setCartProducts] = useState<CartItemsPostReqProps[]>([]);
@@ -106,18 +106,78 @@ const CartPage = () => {
   const { data } = useQuery({
     queryKey: ["cartProducts"],
     queryFn: getCart,
-    // TODO: ADD STALE TIME
+
     refetchIntervalInBackground: true,
     enabled: fetchCartproduct && isLogin,
   });
 
-  if (data as AxiosResponse) {
-    console.log(data);
+  // if (data as AxiosResponse) {
+  //   console.log("getCart---", data);
+  //   const cartProducts: CartItemsPostReqProps[] = [];
 
-    if (data?.data.accessToken) {
-      dispatch(updateAccessToken({ accessToken: data.data.accessToken }));
+  //   if (data?.data) {
+  //     const { isAccessTokenExp, cart } = data.data;
+  //     if (isAccessTokenExp) {
+  //       const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+  //       const { accessToken: newAccessToken } = data.data;
+  //       dispatch(updateAccessToken({ accessToken: newAccessToken }));
+  //       const { email, id, name, refreshToken } = user;
+  //       const updatedUserData = {
+  //         accessToken: newAccessToken,
+  //         email,
+  //         id,
+  //         name,
+  //         refreshToken,
+  //       };
+  //       sessionStorage.removeItem("user");
+  //       sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+  //     }
+  //     const { items, totalAmount, totalItems } = cart;
+  //     items.map((item: CartItemsPostReqProps) => {
+  //       const product = item.product;
+  //       const quantity = item.quantity;
+  //       cartProducts.push({ product, quantity });
+  //     });
+  //     setCartProducts(cartProducts);
+  //     setTotalPrice(totalAmount);
+  //     setTotalQuantity(totalItems);
+  //   }
+  // }
+  useEffect(() => {
+    if (data as AxiosResponse) {
+      console.log("getCart---", data);
+      const cartProducts: CartItemsPostReqProps[] = [];
+  
+      if (data?.data) {
+        const { isAccessTokenExp, cart } = data.data;
+        if (isAccessTokenExp) {
+          const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+          const { accessToken: newAccessToken } = data.data;
+          dispatch(updateAccessToken({ accessToken: newAccessToken }));
+          const { email, id, name, refreshToken } = user;
+          const updatedUserData = {
+            accessToken: newAccessToken,
+            email,
+            id,
+            name,
+            refreshToken,
+          };
+          sessionStorage.removeItem("user");
+          sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+        }
+        const { items, totalAmount, totalItems } = cart;
+        items.map((item: CartItemsPostReqProps) => {
+          const product = item.product;
+          const quantity = item.quantity;
+          cartProducts.push({ product, quantity });
+        });
+        setCartProducts(cartProducts);
+        setTotalPrice(totalAmount);
+        setTotalQuantity(totalItems);
+      }
     }
-  }
+  }, [data, dispatch]); 
+  
 
   useEffect(() => {
     function synclocalstorageCart() {
@@ -194,12 +254,18 @@ const CartPage = () => {
       const { isAccessTokenExp, cart } = response.data;
       if (isAccessTokenExp) {
         // TODO: Update token in localStorge and redux state
-        const user = JSON.parse(sessionStorage.getItem("user")||"{}")
-        const {accessToken:newAccessToken} = response.data
-        dispatch(updateAccessToken({accessToken:newAccessToken}))
-        const {email,id,name,refreshToken} = user
-        const updatedUserData = {accessToken:newAccessToken,email,id,name,refreshToken}
-        sessionStorage.removeItem("user")
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
         sessionStorage.setItem("user", JSON.stringify(updatedUserData));
       }
       const { items, totalAmount, totalItems } = cart;
@@ -215,8 +281,8 @@ const CartPage = () => {
       setTotalQuantity(totalItems);
       console.log("cartProducts-----", cartProducts);
       // TODO: DELTE localstorage key for cart both login and logout
-      localStorage.removeItem("loginUserCart")
-      localStorage.removeItem("logoutUserCart")
+      localStorage.removeItem("loginUserCart");
+      localStorage.removeItem("logoutUserCart");
       // set false for fetch cart product
       setFetchCartProduct(false);
     },
@@ -225,7 +291,7 @@ const CartPage = () => {
     if (isLogin && cartStateProducts.length > 0) {
       console.log("cartStateProducts.length", cartStateProducts.length);
       console.log("cartStateProducts.length", cartStateProducts);
-      
+
       mutation.mutate(cartStateProducts);
     }
   }, [isLogin, cartStateProducts]);
@@ -318,8 +384,47 @@ const CartPage = () => {
           </div>
         </div>
       )}
-      {}
-      {/* {cartState.length > 0 ? (
+      
+      
+      {cartState.length === 0 && !cartProducts && (
+        <div className="mt-16">
+          <div className="text-center">No Product in cart</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CartPage;
+
+// useAuth();
+// const { isLogin } = userState;
+// useEffect(() => {
+//   if (!isLogin) {
+//     console.log("user login",isLogin);
+
+//     setIsUserLogin(false);
+//     toast.error("You are not login!", "Kindly sign in to save the cart. ");
+//   }
+//   if (isLogin) {
+//     setIsUserLogin(true);
+//   }
+// }, [isLogin, toast]);
+
+// useEffect(() => {
+//   if (data) {
+//     console.log("User cart data", data);
+//     setIsNewProductAddedToCart(true);
+//   }
+// }, [data]);
+/*
+  check data ? sync with redux and localstorage
+  fix sync data on refresh
+ add to cart api
+  */
+// const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+// const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
+{/* {cartState.length > 0 ? (
         <div className="mt-16">
           <div className=" flow-root">
             <ul
@@ -376,41 +481,3 @@ const CartPage = () => {
       ) : (
         <div>No Product in cart</div>
       )} */}
-      {cartState.length === 0 && !cartProducts && (
-        <div className="mt-16">
-          <div className="text-center">No Product in cart</div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default CartPage;
-
-// useAuth();
-// const { isLogin } = userState;
-// useEffect(() => {
-//   if (!isLogin) {
-//     console.log("user login",isLogin);
-
-//     setIsUserLogin(false);
-//     toast.error("You are not login!", "Kindly sign in to save the cart. ");
-//   }
-//   if (isLogin) {
-//     setIsUserLogin(true);
-//   }
-// }, [isLogin, toast]);
-
-// useEffect(() => {
-//   if (data) {
-//     console.log("User cart data", data);
-//     setIsNewProductAddedToCart(true);
-//   }
-// }, [data]);
-/*
-  check data ? sync with redux and localstorage
-  fix sync data on refresh
- add to cart api
-  */
-// const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
-// const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
