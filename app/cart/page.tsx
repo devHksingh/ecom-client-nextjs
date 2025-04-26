@@ -1,9 +1,12 @@
 "use client";
 
 import useToast from "@/hook/useToast";
-import { getCart } from "@/http/api";
+import { addToCart, getCart, multilpeProductAddToCart } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { useQuery } from "@tanstack/react-query";
+import { updateAccessToken } from "@/lib/store/features/user/authSlice";
+import { ProductProps } from "@/types/product";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -17,10 +20,20 @@ interface CartProduct {
 }
 
 interface apiCartProducts{
-  productId: string;
+  id: string;
   quantity: number;
 }
-
+interface GetCartProps{
+  accessToken?:string,
+  cart:{
+    user:string,
+    totalItems:number,
+    totalAmount:number,
+    items:[
+      product:ProductProps
+    ]
+  }
+}
 const CartPage = () => {
   const [isUserLogin, setIsUserLogin] = useState<boolean>(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -48,12 +61,7 @@ const CartPage = () => {
     }
   }, [authChecked, isLogin, toast]);
 
-  // useEffect(() => {
-  //   console.log("user login cart page", isLogin);
-  //   if (!isLogin) {
-  //     toast.error("You are not login!", "Kindly sign in to get a deal. ");
-  //   }
-  // }, [isLogin, toast]);
+ 
 
   const { data } = useQuery({
     queryKey: ["cartProducts"],
@@ -62,23 +70,18 @@ const CartPage = () => {
     refetchIntervalInBackground: true,
     enabled: !isNewProductAddedToCart && isLogin,
   });
-  // useEffect(() => {
-  //   if (data) {
-  //     console.log("User cart data", data);
-  //     setIsNewProductAddedToCart(true);
-  //   }
-  // }, [data]);
-  /*
-  check data ? sync with redux and localstorage
-  fix sync data on refresh
- add to cart api
-  */
-  // const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
-  // const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
+
+  if(data as AxiosResponse){
+    console.log(data)
+    
+    if(data?.data.accessToken){
+      dispatch(updateAccessToken({accessToken:data.data.accessToken}))
+    }
+  }
   
 
   useEffect(()=>{
-    function syncCart(){
+    function synclocalstorageCart(){
       const loginUserCart = JSON.parse(localStorage.getItem("loginUserCart") || "[]")
       const logoutUserCart = JSON.parse(localStorage.getItem("logoutUserCart")|| "[]")
       const cartProducts:apiCartProducts[] =[]
@@ -87,31 +90,48 @@ const CartPage = () => {
       cartState.map((product)=>{
         const id = product.productId
         const quantity = product.quantity
-        reduxCartProducts.push({productId:id,quantity})
+        reduxCartProducts.push({id,quantity})
       })
       // compare redux state and localstorage
+      
       if(reduxCartProducts.length === 0){
-        cartProducts.push(loginUserCart)
-        cartProducts.push(logoutUserCart)
+        
+        
+        if(loginUserCart.length>0){
+          // cartProducts.push(loginUserCart)
+          cartProducts.push(...loginUserCart);
+        }
+        if(logoutUserCart.length>0){
+          // cartProducts.push(logoutUserCart)
+          cartProducts.push(...logoutUserCart)
+        }
+       
       }else{
         
-        loginUserCart.forEach((product:apiCartProducts)=>{
-          const exist = reduxCartProducts.some((item:apiCartProducts)=>item.productId === product.productId)
-          if(!exist){
-            reduxCartProducts.push(product)
-          }
-        })
-        logoutUserCart.forEach((product:apiCartProducts)=>{
-          const exist = reduxCartProducts.some((item:apiCartProducts)=> item.productId === product.productId)
-          if(!exist){
-            reduxCartProducts.push(product)
-          }
-        })
+        if(loginUserCart.length>0){
+          loginUserCart.forEach((product:apiCartProducts)=>{
+            const exist = reduxCartProducts.some((item:apiCartProducts)=>item.productId === product.productId)
+            if(!exist){
+              reduxCartProducts.push(product)
+            }
+          })
+        }
+        
+        if(logoutUserCart.length>0){
+          logoutUserCart.forEach((product:apiCartProducts)=>{
+            const exist = reduxCartProducts.some((item:apiCartProducts)=> item.productId === product.productId)
+            if(!exist){
+              reduxCartProducts.push(product)
+            }
+          })
+        }
       }
+      console.log("cartProducts",cartProducts);
+      
       return cartProducts
     }
     if(cartState){
-      const products = syncCart()
+      const products = synclocalstorageCart()
       console.log("setCartStateProducts",products);
       
       setCartStateProducts(products)
@@ -123,6 +143,25 @@ const CartPage = () => {
   }, [cartState]);
   console.log("cartState", cartState);
 
+  const mutation = useMutation({
+    mutationFn:multilpeProductAddToCart,
+    onSuccess:(response)=>{
+      console.log("response mutation",response);
+      
+    }
+  })
+  // useEffect(() => {
+  //   if (isLogin && cartStateProducts.length>0) {
+  //     console.log("cartStateProducts.length",cartStateProducts.length);
+  //     console.log("cartStateProducts.length",cartStateProducts);
+  //     // cartStateProducts.map((product)=>{
+  //     //   console.log(product);
+  //     //   mutation.mutate(product)
+  //     // })
+  //     mutation.mutate(cartStateProducts)
+  //   }
+  // }, [isLogin, cartStateProducts]);
+
   return (
     <div className=" container">
       {cartState.length > 0 ? (
@@ -131,11 +170,7 @@ const CartPage = () => {
             {cartState.map((product: CartProduct) => (
               <li key={product.productId}>
                 <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                  {/* <img
-                    alt={product.imageAlt}
-                    src={product.imageSrc}
-                    className="size-full object-cover"
-                  /> */}
+                  
                   <Image
                   src={product.imageUrl}
                   alt={product.title}
@@ -170,3 +205,18 @@ export default CartPage;
 //     setIsUserLogin(true);
 //   }
 // }, [isLogin, toast]);
+
+
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log("User cart data", data);
+  //     setIsNewProductAddedToCart(true);
+  //   }
+  // }, [data]);
+  /*
+  check data ? sync with redux and localstorage
+  fix sync data on refresh
+ add to cart api
+  */
+  // const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+  // const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
