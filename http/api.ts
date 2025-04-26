@@ -76,6 +76,11 @@ const multilpeProductAddToCart = async(data:{id:string,quantity:number}[])=>{
     return response
 }
 
+const removeFromCart = async( data:{productId:string})=>{
+    const response = await api.post('/api/v1/cart/removeFromCart', data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -85,5 +90,6 @@ export {
     fetchProductByCategoryWithLimit,
     getCart,
     addToCart,
-    multilpeProductAddToCart
+    multilpeProductAddToCart,
+    removeFromCart
 }
