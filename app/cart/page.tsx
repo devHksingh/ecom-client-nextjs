@@ -311,7 +311,7 @@ const CartPage = () => {
 
   return (
     <div className=" container">
-      {cartProducts && (
+      {cartProducts.length>0 && (
         <div className="mt-16 flex flex-col lg:flex-row justify-between">
           <ul
             role="list"
@@ -400,9 +400,9 @@ const CartPage = () => {
       )}
       
       
-      {cartState.length === 0 && !cartProducts && (
+      {cartState.length === 0 && cartProducts.length === 0 && (
         <div className="mt-16">
-          <div className="text-center">No Product in cart</div>
+          <div className="text-center text-2xl text-red-500">No Product in cart</div>
         </div>
       )}
     </div>
