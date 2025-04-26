@@ -208,6 +208,8 @@ const CartPage = () => {
       setTotalQuantity(totalItems);
       console.log("cartProducts-----", cartProducts);
       // TODO: DELTE localstorage key for cart both login and logout
+      localStorage.removeItem("loginUserCart")
+      localStorage.removeItem("logoutUserCart")
       // set false for fetch cart product
       setFetchCartProduct(false);
     },
@@ -216,10 +218,7 @@ const CartPage = () => {
     if (isLogin && cartStateProducts.length > 0) {
       console.log("cartStateProducts.length", cartStateProducts.length);
       console.log("cartStateProducts.length", cartStateProducts);
-      // cartStateProducts.map((product)=>{
-      //   console.log(product);
-      //   mutation.mutate(product)
-      // })
+      
       mutation.mutate(cartStateProducts);
     }
   }, [isLogin, cartStateProducts]);
@@ -372,57 +371,7 @@ const CartPage = () => {
       )} */}
       {cartState.length === 0 && !cartProducts && (
         <div className="mt-16">
-          <div className=" flow-root">
-            <ul
-              role="list"
-              className="-my-6 divide-y divide-gray-200 space-y-2"
-            >
-              {cartState.map((product: CartProduct) => (
-                <li key={product.productId}>
-                  <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                    <Image
-                      src={product.imageUrl}
-                      alt={product.title}
-                      width={50}
-                      height={50}
-                      priority
-                      className="size-full object-contain"
-                    />
-                  </div>
-                  <div className="ml-4 flex flex-1 flex-col">
-                    <div>
-                      <div className="flex justify-between text-base font-medium text-gray-900">
-                        <h3>
-                          <Link href={`/products/${product.productId}`}>
-                            {product.title}
-                          </Link>
-                        </h3>
-                        <p className="ml-4">
-                          {" "}
-                          {formatPrice(product.price, product.currency)}
-                        </p>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {product.brand}
-                      </p>
-                    </div>
-                    <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                      <p className="text-gray-500">Qty {product.quantity}</p>
-
-                      {/* <div className="flex">
-                      <button
-                        type="button"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
-                      >
-                        Remove
-                      </button>
-                    </div> */}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <div className="text-center">No Product in cart</div>
         </div>
       )}
     </div>
