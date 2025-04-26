@@ -2,6 +2,10 @@
 import { getAccessToken, getRefreshToken } from "@/utils/token";
 import axios from "axios";
 
+export interface MultilpeProductProps{
+    id:string,
+    quantity: number
+}
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL!,
@@ -59,6 +63,19 @@ const getCart = async () => {
     return res
 }
 
+const addToCart = async (data: {
+    productId: string,
+    quantity: number
+}) => {
+    const response = await api.post('/api/v1/cart/addCartProduct', data)
+    return response
+}
+
+const multilpeProductAddToCart = async(data:{id:string,quantity:number}[])=>{
+    const response = await api.post('/api/v1/cart/multilpeProductAddToCart', data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -66,5 +83,7 @@ export {
     homePageProduct,
     userCustomizeProduct,
     fetchProductByCategoryWithLimit,
-    getCart
+    getCart,
+    addToCart,
+    multilpeProductAddToCart
 }
