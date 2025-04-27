@@ -167,18 +167,25 @@ const ProductBtn = ({
   const handleAddToCart = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
     let cartData: CartProducts[] = [];
-    try {
-      cartData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
-    } catch (error) {
-      console.error("Failed to parse local storage cart data:", error);
-    }
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+      id: string;
+      quantity: number;
+    }[];
+    cartData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+
     if (isProductAddedToCart) {
       // remove from redux store
       dispatch(removeCartProduct({ productId: id }));
       removeToCartToast(title);
       // Remove from localStorage
       const updatedCart = cartData.filter((product) => product.id !== id);
-      localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      if (updatedCart.length > 0) {
+        localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      }
+      if (cart.length > 0) {
+        const updatedCart = cart.filter((product) => product.id !== id);
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+      }
       // TODO: if logoin mutation call for remove item in cart
     } else {
       // add to redux store
@@ -190,13 +197,20 @@ const ProductBtn = ({
       addToCartToast(title);
       // if product already exists
       const existingProduct = cartData.find((product) => product.id === id);
+      const existingCartProduct = cart.find((product) => product.id === id);
       if (existingProduct) {
         existingProduct.quantity += 1;
       } else {
         cartData.push({ id, quantity: 1 });
       }
+      if (existingCartProduct) {
+        existingCartProduct.quantity += 1;
+      } else {
+        cart.push({ id, quantity: 1 });
+      }
       //  updated cart
       localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      localStorage.setItem("cart", JSON.stringify(cart));
       // TODO : call dispatch call for multilpeProductAddToCart with sync localstorage if login and  DELeTE localstorage key for cart both login and logout
     }
     // Toggle UI state
@@ -339,14 +353,24 @@ const ProductBtn = ({
         localStorage.getItem(localStorageKey) || "[]"
       );
       const existingProduct = cartData.find((product) => product.id === id);
-
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+        id: string;
+        quantity: number;
+      }[];
+      const existingCartProduct = cart.find((product) => product.id === id);
       if (existingProduct) {
         existingProduct.quantity += 1;
       } else {
         cartData.push({ id, quantity: 1 });
       }
+      if (existingCartProduct) {
+        existingCartProduct.quantity += 1;
+      } else {
+        cart.push({ id, quantity: 1 });
+      }
 
       localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      localStorage.setItem("cart", JSON.stringify(cart));
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
@@ -423,8 +447,14 @@ const ProductBtn = ({
         const cartData: CartProducts[] = JSON.parse(
           localStorage.getItem(localStorageKey) || "[]"
         );
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+          id: string;
+          quantity: number;
+        }[];
         const updatedCart = cartData.filter((product) => product.id !== id);
+        const newUpdatedCart = cart.filter((product) => product.id !== id);
         localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+        localStorage.setItem("cart", JSON.stringify(newUpdatedCart));
       } catch (error) {
         console.error("Error removing product from cart:", error);
       }
@@ -435,11 +465,20 @@ const ProductBtn = ({
       const cartData: CartProducts[] = JSON.parse(
         localStorage.getItem(localStorageKey) || "[]"
       );
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+        id: string;
+        quantity: number;
+      }[];
+      const existingProductInCart = cart.find((product) => product.id === id);
       const existingProduct = cartData.find((product) => product.id === id);
       if (existingProduct) {
         existingProduct.quantity -= 1;
         // TODO :CHECK
         localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      }
+      if (existingProductInCart) {
+        existingProductInCart.quantity -= 1;
+        localStorage.setItem("cart", JSON.stringify(cart));
       }
     } catch (error) {
       console.error("Error updating quantity:", error);
