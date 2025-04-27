@@ -12,6 +12,10 @@ import {
   addProductToWishList,
   removeProductFromWishlist,
 } from "@/lib/store/features/wishlist/wishlistSlice";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { multilpeProductAddToCart, removeFromCart } from "@/http/api";
+import { updateAccessToken } from "@/lib/store/features/user/authSlice";
+
 
 interface ProductBtnProps {
   id: string;
@@ -45,7 +49,7 @@ const ProductBtn = ({
   const [productQuantity, setProductQuantity] = useState(1);
   const userState = useAppSelector((state) => state.auth);
   const cartState = useAppSelector((state) => state.cart);
-
+  const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
 
   const toast = useToast();
@@ -163,6 +167,41 @@ const ProductBtn = ({
       5000
     );
   };
+  const productRemoveMutation = useMutation({
+    mutationFn: removeFromCart,
+    onSuccess: (response) => {
+      console.log("productRemoveMutation response--", response);
+      queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
+      
+      toast.success("Product is remove", "Product is remove from the cart.");
+    },
+  });
+  const addProductMutation = useMutation({
+    mutationFn: multilpeProductAddToCart,
+    onSuccess: (response) => {
+      const { isAccessTokenExp } = response.data;
+      if (isAccessTokenExp) {
+        // TODO: Update token in localStorge and redux state
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+
+      // TODO: DELTE localstorage key for cart both login and logout
+      localStorage.removeItem("loginUserCart");
+      localStorage.removeItem("logoutUserCart");
+    },
+  });
 
   const handleAddToCart = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
@@ -179,14 +218,16 @@ const ProductBtn = ({
       removeToCartToast(title);
       // Remove from localStorage
       const updatedCart = cartData.filter((product) => product.id !== id);
-      if (updatedCart.length > 0) {
-        localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      const updatedCartProduct = cart.filter((product) => product.id !== id);
+
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+
+      localStorage.setItem("cart", JSON.stringify(updatedCartProduct));
+
+      // TODO: if logoin remove mutation call for remove item in cart
+      if (isLogin ) {
+        productRemoveMutation.mutate({productId:id})
       }
-      if (cart.length > 0) {
-        const updatedCart = cart.filter((product) => product.id !== id);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-      }
-      // TODO: if logoin mutation call for remove item in cart
     } else {
       // add to redux store
       dispatch(
@@ -212,6 +253,9 @@ const ProductBtn = ({
       localStorage.setItem(localStorageKey, JSON.stringify(cartData));
       localStorage.setItem("cart", JSON.stringify(cart));
       // TODO : call dispatch call for multilpeProductAddToCart with sync localstorage if login and  DELeTE localstorage key for cart both login and logout
+      if(isLogin && cart.length>0){
+        addProductMutation.mutate(cart)
+      }
     }
     // Toggle UI state
     setIsProductAddedToCart(!isProductAddedToCart);
