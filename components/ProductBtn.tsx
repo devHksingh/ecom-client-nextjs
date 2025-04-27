@@ -18,6 +18,7 @@ interface ProductBtnProps {
   brand: string;
   title: string;
   imageUrl: string;
+  currency: string;
   totalStock: number;
   price: number;
 }
@@ -25,8 +26,8 @@ interface CartProducts {
   id: string;
   quantity: number;
 }
-interface WishListProducts{
-  id:string;
+interface WishListProducts {
+  id: string;
 }
 
 const ProductBtn = ({
@@ -43,6 +44,7 @@ const ProductBtn = ({
     useState(false);
   const [productQuantity, setProductQuantity] = useState(1);
   const userState = useAppSelector((state) => state.auth);
+  const cartState = useAppSelector((state) => state.cart);
 
   const dispatch = useAppDispatch();
 
@@ -50,23 +52,76 @@ const ProductBtn = ({
 
   const { isLogin } = userState;
   // Delaying toast until login status is determined
-    useEffect(() => {
-      if (typeof isLogin === "boolean") {
-        setAuthChecked(true);
-      }
-    }, [isLogin]);
-
-  // useEffect(() => {
-  //   if (!isLogin) {
-  //     toast.error("You are not login!", "Kindly sign in to get a deal. ");
-  //   }
-  // }, [isLogin, toast]);
   useEffect(() => {
-      console.log("user login cart page", isLogin);
-      if (authChecked && !isLogin) {
-        toast.error("You are not login!", "Kindly sign in to get a deal.");
-      }
-    }, [authChecked, isLogin, toast]);
+    if (typeof isLogin === "boolean") {
+      setAuthChecked(true);
+    }
+  }, [isLogin]);
+
+  useEffect(() => {
+    const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
+    const localWishlistKey = isLogin
+      ? "loginUserWishlist"
+      : "logoutUserWishlist";
+    const authCart = JSON.parse(
+      localStorage.getItem(localStorageKey) || "[]"
+    ) as { id: string; quantity: number }[];
+    const authWishlist = JSON.parse(
+      localStorage.getItem(localWishlistKey) || "[]"
+    ) as { id: string }[];
+    const localStorageCart = JSON.parse(
+      localStorage.getItem("cart") || "[]"
+    ) as { productId: string; quantity: number }[];
+    const localwishlist = JSON.parse(
+      localStorage.getItem("wishlist") || "[]"
+    ) as { productId: string }[];
+
+    const reduxProduct = cartState.find((item) => item.productId === id);
+
+    if (reduxProduct) {
+      setIsProductAddedToCart(true);
+      setProductQuantity(reduxProduct.quantity);
+      return;
+    }
+
+    const localProduct = authCart.find((item) => item.id === id);
+    const wishlistProduct = authWishlist.find((item) => item.id === id);
+    const localCartProduct = localStorageCart.find(
+      (item) => item.productId === id
+    );
+    const localWishlistProduct = localwishlist.find(
+      (item) => item.productId === id
+    );
+
+    if (localWishlistProduct) {
+      setIsProductAddedToWishlist(true);
+    } else if (wishlistProduct) {
+      setIsProductAddedToWishlist(true);
+    } else {
+      setIsProductAddedToWishlist(false);
+    }
+
+    if (localCartProduct) {
+      setIsProductAddedToCart(true);
+      setProductQuantity(localCartProduct.quantity);
+      return;
+    }
+
+    if (localProduct) {
+      setIsProductAddedToCart(true);
+      setProductQuantity(localProduct.quantity);
+    } else {
+      setIsProductAddedToCart(false);
+      setProductQuantity(1);
+    }
+  }, [cartState, id, isLogin]);
+
+  useEffect(() => {
+    console.log("user login cart page", isLogin);
+    if (authChecked && !isLogin) {
+      toast.error("You are not login!", "Kindly sign in to get a deal.");
+    }
+  }, [authChecked, isLogin, toast]);
 
   useEffect(() => {
     if (totalStock < 10) {
@@ -109,83 +164,6 @@ const ProductBtn = ({
     );
   };
 
-  // const handleAddToCart = () => {
-  //   if (isProductAddedToCart) {
-  //     dispatch(removeCartProduct({ productId: id }));
-  //     // removeToCartToast(title);
-  //     // remove product from cart
-  //     if (isLogin) {
-  //       // avoid breaking  app if the stored data is invalid
-  //       try {
-  //         const cartData = JSON.parse(
-  //           localStorage.getItem("loginUserCart") || "[]"
-  //         );
-  //         console.log("cart login data", cartData);
-  //         if (cartData.length > 0) {
-  //           const newCart: [] = cartData.filter(
-  //             (product: CartProducts) => product.id !== id
-  //           );
-  //           localStorage.removeItem("loginUserCart");
-  //           localStorage.setItem("loginUserCart", JSON.stringify(newCart));
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to parse cart:", error);
-  //       }
-  //     } else {
-  //       try {
-  //         const cartData = JSON.parse(
-  //           localStorage.getItem("logoutUserCart") || "[]"
-  //         );
-  //         if (cartData.length > 0) {
-  //           const newCart: [] = cartData.filter(
-  //             (product: CartProducts) => product.id !== id
-  //           );
-  //           localStorage.removeItem("logoutUserCart");
-  //           localStorage.setItem("logoutUserCart", JSON.stringify(newCart));
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to parse cart:", error);
-  //       }
-  //     }
-  //     removeToCartToast(title);
-  //   } else {
-  //     // add cart product
-  //     dispatch(
-  //       addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
-  //     );
-  //     // login || withoutLogin
-  //     if (isLogin) {
-  //       try {
-  //         const cartData = JSON.parse(
-  //           localStorage.getItem("loginUserCart") || "[]"
-  //         );
-  //         if (cartData.length > 0) {
-  //           const existingProduct: { id: string; quantity: number } =
-  //             cartData.filter((product: CartProducts) => product.id === id);
-  //           if (existingProduct) {
-  //             existingProduct.quantity += 1;
-  //             const cartProducts: CartProducts[] = cartData.filter(
-  //               (product: CartProducts) => product.id !== id
-  //             );
-  //             cartProducts.push(existingProduct);
-  //             localStorage.removeItem("loginUserCart");
-  //             localStorage.setItem(
-  //               "loginUserCart",
-  //               JSON.stringify(cartProducts)
-  //             );
-  //           } else {
-  //             cartData.push({ id: id, quantity: 1 });
-  //           }
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to parse cart:", error);
-  //       }
-  //     }
-  //     addToCartToast(title);
-  //   }
-  //   setIsProductAddedToCart(!isProductAddedToCart);
-  // };
-
   const handleAddToCart = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
     let cartData: CartProducts[] = [];
@@ -201,11 +179,14 @@ const ProductBtn = ({
       // Remove from localStorage
       const updatedCart = cartData.filter((product) => product.id !== id);
       localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      // TODO: if logoin mutation call for remove item in cart
     } else {
       // add to redux store
       dispatch(
-        addCart({ brand, imageUrl, price, productId: id, quantity: 1, title })
+        // addCart({ brand, imageUrl, price, productId: id, quantity: 1, title,currency })
+        addCart({ productId: id, quantity: 1 })
       );
+
       addToCartToast(title);
       // if product already exists
       const existingProduct = cartData.find((product) => product.id === id);
@@ -216,12 +197,15 @@ const ProductBtn = ({
       }
       //  updated cart
       localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      // TODO : call dispatch call for multilpeProductAddToCart with sync localstorage if login and  DELeTE localstorage key for cart both login and logout
     }
     // Toggle UI state
     setIsProductAddedToCart(!isProductAddedToCart);
   };
   const handleAddToWishlist = () => {
-    const localStorageKey = isLogin ? "loginUserWishlist" : "logoutUserWishlist";
+    const localStorageKey = isLogin
+      ? "loginUserWishlist"
+      : "logoutUserWishlist";
     let wishlistData: WishListProducts[] = [];
     try {
       wishlistData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
@@ -232,7 +216,9 @@ const ProductBtn = ({
       // remove from redux store
       dispatch(removeProductFromWishlist({ productId: id }));
       removeToWishlistToast(title);
-      const updatedWishlist = wishlistData.filter((product)=>product.id !== id)
+      const updatedWishlist = wishlistData.filter(
+        (product) => product.id !== id
+      );
       localStorage.setItem(localStorageKey, JSON.stringify(updatedWishlist));
     } else {
       // add to redux store
@@ -245,16 +231,15 @@ const ProductBtn = ({
           quantity: 1,
           title,
         })
-        
       );
       addToWishlistToast(title);
-      wishlistData.push({id:id})
+      wishlistData.push({ id: id });
       localStorage.setItem(localStorageKey, JSON.stringify(wishlistData));
     }
     setIsProductAddedToWishlist(!isProductAddedToWishlist);
   };
   // const handleAddToWishlist = () => {
-    
+
   //   if (isProductAddedToWishlist) {
   //     dispatch(removeProductFromWishlist({ productId: id }));
   //     removeToWishlistToast(title);
@@ -328,7 +313,7 @@ const ProductBtn = ({
   //   }
   // };
 
-  const handleAddQuantity =()=>{
+  const handleAddQuantity = () => {
     if (productQuantity + 1 > totalStock) {
       toast.error(
         "Stock running low",
@@ -340,12 +325,13 @@ const ProductBtn = ({
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
     dispatch(
       addCart({
-        brand,
-        imageUrl,
-        price,
+        // brand,
+        // imageUrl,
+        // price,
         productId: id,
         quantity: productQuantity + 1,
-        title,
+        // title,
+        // currency,
       })
     );
     try {
@@ -364,7 +350,7 @@ const ProductBtn = ({
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
-  }
+  };
 
   // const handleRemoveQuantity = () => {
   //   if (productQuantity - 1 === 0) {
@@ -428,7 +414,7 @@ const ProductBtn = ({
   // };
   const handleRemoveQuantity = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
-    if(productQuantity -1 <=0){
+    if (productQuantity - 1 <= 0) {
       dispatch(removeCartProduct({ productId: id }));
       setIsProductAddedToCart(false);
       setProductQuantity(0);
@@ -442,7 +428,7 @@ const ProductBtn = ({
       } catch (error) {
         console.error("Error removing product from cart:", error);
       }
-      return
+      return;
     }
     setProductQuantity((prev) => prev - 1);
     try {
@@ -450,7 +436,7 @@ const ProductBtn = ({
         localStorage.getItem(localStorageKey) || "[]"
       );
       const existingProduct = cartData.find((product) => product.id === id);
-      if(existingProduct){
+      if (existingProduct) {
         existingProduct.quantity -= 1;
         // TODO :CHECK
         localStorage.setItem(localStorageKey, JSON.stringify(cartData));
@@ -458,8 +444,7 @@ const ProductBtn = ({
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
-
-  }
+  };
 
   return (
     <div>
@@ -529,13 +514,3 @@ const ProductBtn = ({
 };
 
 export default ProductBtn;
-
-/*
-const loginUserCartItems = [];
-  const withOutLoginUserCartItems = [];
-  const loginUserWishlist = [];
-  const withoutLoginUserWishlist = [];
-  // const logincartData = JSON.parse(localStorage.getItem("loginUserCart") || "[]");
-  //   const cartState = useAppSelector((state) => state.cart);
-  //   const wishListState = useAppSelector((state) => state.wishList);
-*/
