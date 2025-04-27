@@ -326,7 +326,39 @@ const CartPage = () => {
 
   const handleRemoveProduct = (productId: string) => {
     productRemoveMutation.mutate({ productId });
+    // remove product form local storage {loginUserCart,logoutUserCart,cart}
+    const loginUserCart = JSON.parse(localStorage.getItem("loginUserCart") || "[]") as { id: string; quantity: number }[];
+    const logoutUserCart = JSON.parse(localStorage.getItem("logoutUserCart") || "[]") as { id: string; quantity: number }[];
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as { id: string; quantity: number }[];
+    if(loginUserCart.length>0){
+      const updatedCart = loginUserCart.filter((item)=> item.id !==productId)
+      localStorage.setItem("loginUserCart",JSON.stringify(updatedCart))
+    }
+    if(logoutUserCart.length>0){
+      const updatedCart = logoutUserCart.filter((item)=> item.id !==productId)
+      localStorage.setItem("logoutUserCart",JSON.stringify(updatedCart))
+    }
+    if(cart.length>0){
+      const updatedCart = cart.filter((item)=> item.id !==productId)
+      localStorage.setItem("cart",JSON.stringify(updatedCart))
+    }
   };
+  // const handleRemoveProduct = (productId: string) => {
+  //   productRemoveMutation.mutate({ productId });
+  
+  //   // Remove product from all possible localStorage keys
+  //   const localStorageKeys = ["loginUserCart", "logoutUserCart", "cart"];
+  
+  //   localStorageKeys.forEach((key) => {
+  //     const storedCart = JSON.parse(localStorage.getItem(key) || "[]") as { id: string; quantity: number }[];
+  
+  //     if (storedCart.length > 0) {
+  //       const updatedCart = storedCart.filter((item) => item.id !== productId);
+  //       localStorage.setItem(key, JSON.stringify(updatedCart));
+  //     }
+  //   });
+  // };
+  
 
   if (isLoading) {
     // toast.info("Fetching cart data", "Please wait we fecthig cart data ");
