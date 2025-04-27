@@ -13,10 +13,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LoaderCircle } from "lucide-react";
+// import synclocalstorageCart from "@/utils/cartUtils";
 
-
-
-interface CartItemsPostReqProps {
+export interface CartItemsPostReqProps {
   product: ProductProps;
   quantity: number;
 }
@@ -27,23 +26,20 @@ interface apiCartProducts {
 }
 
 const CartPage = () => {
-  
   const [authChecked, setAuthChecked] = useState(false);
   const [fetchCartproduct, setFetchCartProduct] = useState(true);
   const [cartProducts, setCartProducts] = useState<CartItemsPostReqProps[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const [cartStateProducts, setCartStateProducts] = useState<apiCartProducts[]>(
-    []
-  );
+  const [cartStateProducts, setCartStateProducts] = useState<apiCartProducts[]>([]);
+  const [needSync, setNeedSync] = useState(false);
+  // const hasMounted = useRef(false);
   const queryClient = useQueryClient();
   const router = useRouter();
   const userState = useAppSelector((state) => state.auth);
   const cartState = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
-  if (cartState) {
-    console.log("cartState", cartState);
-  }
+  
   const { isLogin } = userState;
   const formatPrice = (amount: number, currency: string) => {
     let formatedPrice: string;
@@ -149,18 +145,31 @@ const CartPage = () => {
           sessionStorage.removeItem("user");
           sessionStorage.setItem("user", JSON.stringify(updatedUserData));
         }
+        const cartLocalStorage:{productId:string,quantity:number}[] =[]
         const { items, totalAmount, totalItems } = cart;
         items.map((item: CartItemsPostReqProps) => {
           const product = item.product;
+          const productId = item.product._id
           const quantity = item.quantity;
           cartProducts.push({ product, quantity });
+          cartLocalStorage.push({productId,quantity})
         });
+        console.log("items ------- ",cartProducts)
+        if(cartLocalStorage.length>0){
+          localStorage.setItem("cart",JSON.stringify(cartLocalStorage))
+        }
         setCartProducts(cartProducts);
         setTotalPrice(totalAmount);
         setTotalQuantity(totalItems);
       }
     }
   }, [data, dispatch]);
+
+  // useEffect(() => {
+  //   const { products, needSync } = synclocalstorageCart();
+  //   setCartStateProducts(products);
+  //   setNeedSync(needSync);
+  // }, []);
 
   useEffect(() => {
     function synclocalstorageCart() {
@@ -221,6 +230,7 @@ const CartPage = () => {
       console.log("setCartStateProducts", products);
 
       setCartStateProducts(products);
+      setNeedSync(true);
     }
   }, [cartState]);
 
@@ -268,14 +278,41 @@ const CartPage = () => {
       setFetchCartProduct(false);
     },
   });
-  useEffect(() => {
-    if (isLogin && cartStateProducts.length > 0) {
-      console.log("cartStateProducts.length", cartStateProducts.length);
-      console.log("cartStateProducts.length", cartStateProducts);
+  // useEffect(() => {
+  //   if (cartStateProducts.length > 0 && isLogin) {
+      
+  //       console.log("cartStateProducts.length", cartStateProducts.length);
+  //       console.log("cartStateProducts.length", cartStateProducts);
 
+  //       mutation.mutate(cartStateProducts);
+      
+  //   }
+  // }, [cartStateProducts, isLogin]);
+
+  useEffect(() => {
+    if (isLogin && needSync && cartStateProducts.length > 0) {
+      console.log("Syncing cart to server...");
       mutation.mutate(cartStateProducts);
+      setNeedSync(false);
     }
-  }, [isLogin, cartStateProducts]);
+  }, [isLogin, needSync, cartStateProducts]);
+
+  // useEffect(()=>{
+  //   if( cartStateProducts.length > 0){
+  //     console.log("$$$$....Syncing cart to server...");
+  //     mutation.mutate(cartStateProducts);
+  //     setNeedSync(false);
+  //   }
+  // },[cartStateProducts, mutation])
+  // useEffect(() => {
+  //   if (hasMounted.current) {
+  //     if (cartStateProducts.length > 0 && isLogin) {
+  //       mutation.mutate(cartStateProducts);
+  //     }
+  //   } else {
+  //     hasMounted.current = true;
+  //   }
+  // }, [cartStateProducts, isLogin]);
 
   const productRemoveMutation = useMutation({
     mutationFn: removeFromCart,
@@ -292,7 +329,7 @@ const CartPage = () => {
   };
 
   if (isLoading) {
-    toast.info("Fetching cart data", "Please wait we fecthig cart data ");
+    // toast.info("Fetching cart data", "Please wait we fecthig cart data ");
     return (
       <div className=" container">
         <div className="flex justify-between items-center h-full">
@@ -307,13 +344,13 @@ const CartPage = () => {
     );
   }
   if (isError) {
-    toast.error(
-      "Failed to fetch cart data",
-      "Something went wrong. Failed to fetch cart data."
-    );
+    // toast.error(
+    //   "Failed to fetch cart data",
+    //   "Something went wrong. Failed to fetch cart data."
+    // );
     return (
       <div className=" container">
-        <div className="flex justify-center items-center h-[50vh] text-red-500 text-lg">
+        <div className="flex justify-center items-center h-full text-red-500 text-lg">
           Something went wrong. Failed to fetch cart data.
         </div>
       </div>
