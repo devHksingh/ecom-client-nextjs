@@ -5,7 +5,14 @@ import {
   addCart,
   removeCartProduct,
 } from "@/lib/store/features/cart/cartSlice";
-import { Heart, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import {
+  Heart,
+  LoaderCircle,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
@@ -13,9 +20,8 @@ import {
   removeProductFromWishlist,
 } from "@/lib/store/features/wishlist/wishlistSlice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { multilpeProductAddToCart, removeFromCart } from "@/http/api";
+import { addToCart,  removeFromCart } from "@/http/api";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
-
 
 interface ProductBtnProps {
   id: string;
@@ -172,12 +178,12 @@ const ProductBtn = ({
     onSuccess: (response) => {
       console.log("productRemoveMutation response--", response);
       queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
-      
+
       toast.success("Product is remove", "Product is remove from the cart.");
     },
   });
   const addProductMutation = useMutation({
-    mutationFn: multilpeProductAddToCart,
+    mutationFn: addToCart,
     onSuccess: (response) => {
       const { isAccessTokenExp } = response.data;
       if (isAccessTokenExp) {
@@ -198,8 +204,8 @@ const ProductBtn = ({
       }
 
       // TODO: DELTE localstorage key for cart both login and logout
-      localStorage.removeItem("loginUserCart");
-      localStorage.removeItem("logoutUserCart");
+      // localStorage.removeItem("loginUserCart");
+      // localStorage.removeItem("logoutUserCart");
     },
   });
 
@@ -225,8 +231,8 @@ const ProductBtn = ({
       localStorage.setItem("cart", JSON.stringify(updatedCartProduct));
 
       // TODO: if logoin remove mutation call for remove item in cart
-      if (isLogin ) {
-        productRemoveMutation.mutate({productId:id})
+      if (isLogin) {
+        productRemoveMutation.mutate({ productId: id });
       }
     } else {
       // add to redux store
@@ -253,8 +259,8 @@ const ProductBtn = ({
       localStorage.setItem(localStorageKey, JSON.stringify(cartData));
       localStorage.setItem("cart", JSON.stringify(cart));
       // TODO : call dispatch call for multilpeProductAddToCart with sync localstorage if login and  DELeTE localstorage key for cart both login and logout
-      if(isLogin && cart.length>0){
-        addProductMutation.mutate(cart)
+      if (isLogin && cart.length > 0) {
+        addProductMutation.mutate({productId:id,quantity:1});
       }
     }
     // Toggle UI state
@@ -552,18 +558,30 @@ const ProductBtn = ({
                     variant={"ghost"}
                     onClick={handleAddToCart}
                     className=" hover:bg-red-100 text-red-500"
+                    disabled={productRemoveMutation.isPending}
                   >
-                    <Trash2 className="text-red-500" />
+                    {productRemoveMutation.isPending ? (
+                      <LoaderCircle className="animate-spin text-red-500" />
+                    ) : (
+                      <Trash2 className="text-red-500" />
+                    )}
                   </Button>
                 </div>
               </div>
             ) : (
               <button
                 onClick={handleAddToCart}
-                className="flex px-2.5 py-1.5 bg-blue-500 rounded-md hover:bg-blue-700 text-white gap-2"
+                disabled={addProductMutation.isPending}
+                className="flex px-2.5 py-1.5 bg-blue-500 rounded-md hover:bg-blue-700 text-white gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ShoppingCart />
-                Add To Cart
+                {addProductMutation.isPending ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  <>
+                    <ShoppingCart />
+                    Add To Cart
+                  </>
+                )}
               </button>
             )}
           </div>
