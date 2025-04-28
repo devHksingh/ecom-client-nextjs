@@ -81,6 +81,11 @@ const removeFromCart = async( data:{productId:string})=>{
     return response
 }
 
+const updateCartQuantity = async(data:{productId:string,quantity:number,type:string})=>{
+    const response = await api.post('/api/v1/cart/updateCartProduct', data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -91,5 +96,6 @@ export {
     getCart,
     addToCart,
     multilpeProductAddToCart,
-    removeFromCart
+    removeFromCart,
+    updateCartQuantity
 }
