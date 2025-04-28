@@ -20,7 +20,13 @@ import {
   removeProductFromWishlist,
 } from "@/lib/store/features/wishlist/wishlistSlice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addToCart, addToWishlist, removeFromCart, updateCartQuantity } from "@/http/api";
+import {
+  addToCart,
+  addToWishlist,
+  removeFromCart,
+  removeWishlist,
+  updateCartQuantity,
+} from "@/http/api";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 
 interface ProductBtnProps {
@@ -278,8 +284,8 @@ const ProductBtn = ({
   });
 
   const addToWishlistMutation = useMutation({
-    mutationFn:addToWishlist,
-    onSuccess:(response)=>{
+    mutationFn: addToWishlist,
+    onSuccess: (response) => {
       const { isAccessTokenExp } = response.data;
       if (isAccessTokenExp) {
         //  token in localStorge and redux state
@@ -296,24 +302,78 @@ const ProductBtn = ({
         };
         sessionStorage.removeItem("user");
         sessionStorage.setItem("user", JSON.stringify(updatedUserData));
-        setIsProductAddedToWishlist(true)
+        setIsProductAddedToWishlist(true);
       }
     },
-    onError:()=>{
-      setIsProductAddedToWishlist(false)
+    onError: () => {
+      setIsProductAddedToWishlist(false);
       dispatch(removeProductFromWishlist({ productId: id }));
       const localStorageKey = isLogin
-      ? "loginUserWishlist"
-      : "logoutUserWishlist";
+        ? "loginUserWishlist"
+        : "logoutUserWishlist";
       let wishlistData: WishListProducts[] = [];
       wishlistData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
       const updatedWishlist = wishlistData.filter(
         (product) => product.id !== id
       );
       localStorage.setItem(localStorageKey, JSON.stringify(updatedWishlist));
-      toast.error("Request Falied","Failed to add product on wishlist .Kindly retry!")
-    }
-  })
+      toast.error(
+        "Request Falied",
+        "Failed to add product on wishlist .Kindly retry!"
+      );
+    },
+  });
+
+  const removeWishlistMutation = useMutation({
+    mutationFn: removeWishlist,
+    onSuccess: (response) => {
+      const { isAccessTokenExp } = response.data;
+      if (isAccessTokenExp) {
+        //  token in localStorge and redux state
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+      setIsProductAddedToWishlist(false);
+    },
+    onError: () => {
+      setIsProductAddedToWishlist(true);
+      dispatch(
+        addProductToWishList({
+          brand,
+          imageUrl,
+          price,
+          productId: id,
+          quantity: 1,
+          title,
+        })
+      );
+      const localStorageKey = isLogin
+        ? "loginUserWishlist"
+        : "logoutUserWishlist";
+      let wishlistData: WishListProducts[] = [];
+      wishlistData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+      wishlistData.push({ id: id });
+      localStorage.setItem(localStorageKey, JSON.stringify(wishlistData));
+
+      toast.error(
+        "Request Falied",
+        "Failed to remove product on wishlist .Kindly retry!",
+        6000
+      );
+      setIsProductAddedToWishlist(true);
+    },
+  });
 
   const handleAddToCart = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
@@ -382,9 +442,12 @@ const ProductBtn = ({
     } catch (error) {
       console.error("Failed to parse local storage wishlist data:", error);
     }
-    
+
     if (isProductAddedToWishlist) {
-      
+      if (isLogin) {
+        removeWishlistMutation.mutate({ productId: id });
+      }
+
       // remove from redux store
       dispatch(removeProductFromWishlist({ productId: id }));
       removeToWishlistToast(title);
@@ -392,6 +455,7 @@ const ProductBtn = ({
         (product) => product.id !== id
       );
       localStorage.setItem(localStorageKey, JSON.stringify(updatedWishlist));
+      setIsProductAddedToWishlist(false);
     } else {
       // add to redux store
       dispatch(
@@ -404,14 +468,14 @@ const ProductBtn = ({
           title,
         })
       );
-      if(isLogin){
-        addToWishlistMutation.mutate({productId:id})
+      if (isLogin) {
+        addToWishlistMutation.mutate({ productId: id });
       }
       addToWishlistToast(title);
       wishlistData.push({ id: id });
       localStorage.setItem(localStorageKey, JSON.stringify(wishlistData));
+      setIsProductAddedToWishlist(true);
     }
-    setIsProductAddedToWishlist(!isProductAddedToWishlist);
   };
   // const handleAddToWishlist = () => {
 
