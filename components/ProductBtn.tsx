@@ -20,7 +20,7 @@ import {
   removeProductFromWishlist,
 } from "@/lib/store/features/wishlist/wishlistSlice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addToCart, removeFromCart, updateCartQuantity } from "@/http/api";
+import { addToCart, addToWishlist, removeFromCart, updateCartQuantity } from "@/http/api";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 
 interface ProductBtnProps {
@@ -277,6 +277,44 @@ const ProductBtn = ({
     },
   });
 
+  const addToWishlistMutation = useMutation({
+    mutationFn:addToWishlist,
+    onSuccess:(response)=>{
+      const { isAccessTokenExp } = response.data;
+      if (isAccessTokenExp) {
+        //  token in localStorge and redux state
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+        setIsProductAddedToWishlist(true)
+      }
+    },
+    onError:()=>{
+      setIsProductAddedToWishlist(false)
+      dispatch(removeProductFromWishlist({ productId: id }));
+      const localStorageKey = isLogin
+      ? "loginUserWishlist"
+      : "logoutUserWishlist";
+      let wishlistData: WishListProducts[] = [];
+      wishlistData = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+      const updatedWishlist = wishlistData.filter(
+        (product) => product.id !== id
+      );
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedWishlist));
+      toast.error("Request Falied","Failed to add product on wishlist .Kindly retry!")
+    }
+  })
+
   const handleAddToCart = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
     let cartData: CartProducts[] = [];
@@ -344,7 +382,9 @@ const ProductBtn = ({
     } catch (error) {
       console.error("Failed to parse local storage wishlist data:", error);
     }
+    
     if (isProductAddedToWishlist) {
+      
       // remove from redux store
       dispatch(removeProductFromWishlist({ productId: id }));
       removeToWishlistToast(title);
@@ -364,6 +404,9 @@ const ProductBtn = ({
           title,
         })
       );
+      if(isLogin){
+        addToWishlistMutation.mutate({productId:id})
+      }
       addToWishlistToast(title);
       wishlistData.push({ id: id });
       localStorage.setItem(localStorageKey, JSON.stringify(wishlistData));
