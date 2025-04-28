@@ -2,8 +2,8 @@
 import { getAccessToken, getRefreshToken } from "@/utils/token";
 import axios from "axios";
 
-export interface MultilpeProductProps{
-    id:string,
+export interface MultilpeProductProps {
+    id: string,
     quantity: number
 }
 
@@ -71,17 +71,17 @@ const addToCart = async (data: {
     return response
 }
 
-const multilpeProductAddToCart = async(data:{id:string,quantity:number}[])=>{
+const multilpeProductAddToCart = async (data: { id: string, quantity: number }[]) => {
     const response = await api.post('/api/v1/cart/multilpeProductAddToCart', data)
     return response
 }
 
-const removeFromCart = async( data:{productId:string})=>{
+const removeFromCart = async (data: { productId: string }) => {
     const response = await api.post('/api/v1/cart/removeFromCart', data)
     return response
 }
 
-const updateCartQuantity = async(data:{productId:string,quantity:number,type:string})=>{
+const updateCartQuantity = async (data: { productId: string, quantity: number, type: string }) => {
     const response = await api.post('/api/v1/cart/updateCartProduct', data)
     return response
 }

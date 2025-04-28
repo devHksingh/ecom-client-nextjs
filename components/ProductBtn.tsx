@@ -20,7 +20,7 @@ import {
   removeProductFromWishlist,
 } from "@/lib/store/features/wishlist/wishlistSlice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addToCart,  removeFromCart } from "@/http/api";
+import { addToCart, removeFromCart, updateCartQuantity } from "@/http/api";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 
 interface ProductBtnProps {
@@ -134,7 +134,7 @@ const ProductBtn = ({
   }, [authChecked, isLogin, toast]);
 
   useEffect(() => {
-    if (totalStock < 10) {
+    if (totalStock < 5) {
       toast.error(
         "🛒 Low Stock Alert",
         `Act fast! Only ${totalStock} units remaining.`
@@ -178,8 +178,40 @@ const ProductBtn = ({
     onSuccess: (response) => {
       console.log("productRemoveMutation response--", response);
       queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
+      // TODO: REMOVE PRODUCT FROM LOCAL STORAGE
+      const localStorageKey = isLogin
+        ? "loginUserWishlist"
+        : "logoutUserWishlist";
+      const cartData: CartProducts[] = JSON.parse(
+        localStorage.getItem(localStorageKey) || "[]"
+      );
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+        id: string;
+        quantity: number;
+      }[];
+      const updatedCart = cartData.filter((product) => product.id !== id);
+      const newUpdatedCart = cart.filter((product) => product.id !== id);
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      localStorage.setItem("cart", JSON.stringify(newUpdatedCart));
 
       toast.success("Product is remove", "Product is remove from the cart.");
+    },
+    onError: () => {
+      const localStorageKey = isLogin
+        ? "loginUserWishlist"
+        : "logoutUserWishlist";
+      const cartData: CartProducts[] = JSON.parse(
+        localStorage.getItem(localStorageKey) || "[]"
+      );
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+        id: string;
+        quantity: number;
+      }[];
+      cartData.push({ id, quantity: 1 });
+      cart.push({ id, quantity: 1 });
+      setProductQuantity(1);
+      setIsProductAddedToCart(true);
+      toast.error("Unable to remove product", "Kindly retry for it!");
     },
   });
   const addProductMutation = useMutation({
@@ -187,7 +219,7 @@ const ProductBtn = ({
     onSuccess: (response) => {
       const { isAccessTokenExp } = response.data;
       if (isAccessTokenExp) {
-        // TODO: Update token in localStorge and redux state
+        //  token in localStorge and redux state
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
         const { accessToken: newAccessToken } = response.data;
         dispatch(updateAccessToken({ accessToken: newAccessToken }));
@@ -202,10 +234,46 @@ const ProductBtn = ({
         sessionStorage.removeItem("user");
         sessionStorage.setItem("user", JSON.stringify(updatedUserData));
       }
+    },
+  });
 
-      // TODO: DELTE localstorage key for cart both login and logout
-      // localStorage.removeItem("loginUserCart");
-      // localStorage.removeItem("logoutUserCart");
+  const productQuantityMutation = useMutation({
+    mutationFn: updateCartQuantity,
+    onSuccess: (response) => {
+      const { isAccessTokenExp, message } = response.data;
+      if (message === "Product quantity increased successfully") {
+        dispatch(
+          addCart({
+            // brand,
+            // imageUrl,
+            // price,
+            productId: id,
+            quantity: productQuantity + 1,
+            // title,
+            // currency,
+          })
+        );
+        setProductQuantity((prev) => prev + 1);
+      }
+      if (message === "Product remove from cart successfully'") {
+        setProductQuantity((prev) => prev - 1);
+      }
+      if (isAccessTokenExp) {
+        //  Update token in localStorge and redux state
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
     },
   });
 
@@ -260,7 +328,7 @@ const ProductBtn = ({
       localStorage.setItem("cart", JSON.stringify(cart));
       // TODO : call dispatch call for multilpeProductAddToCart with sync localstorage if login and  DELeTE localstorage key for cart both login and logout
       if (isLogin && cart.length > 0) {
-        addProductMutation.mutate({productId:id,quantity:1});
+        addProductMutation.mutate({ productId: id, quantity: 1 });
       }
     }
     // Toggle UI state
@@ -385,19 +453,19 @@ const ProductBtn = ({
       );
       return;
     }
-    setProductQuantity((prev) => prev + 1);
+    const currentQuantity = productQuantity;
+    console.log("currentQuantity", currentQuantity);
+
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
-    dispatch(
-      addCart({
-        // brand,
-        // imageUrl,
-        // price,
+    // TODO: CALL api to add cart quantity if login
+    if (isLogin) {
+      productQuantityMutation.mutate({
         productId: id,
-        quantity: productQuantity + 1,
-        // title,
-        // currency,
-      })
-    );
+        quantity: currentQuantity + 1,
+        type: "add",
+      });
+    }
+
     try {
       const cartData: CartProducts[] = JSON.parse(
         localStorage.getItem(localStorageKey) || "[]"
@@ -486,31 +554,50 @@ const ProductBtn = ({
   //     }
   //   }
   // };
+
   const handleRemoveQuantity = () => {
     const localStorageKey = isLogin ? "loginUserCart" : "logoutUserCart";
-    if (productQuantity - 1 <= 0) {
+
+    //  If quantity already 0, do nothing
+    if (productQuantity === 0) {
+      console.log("Already at zero, nothing to remove.");
+      return;
+    }
+
+    //  If quantity becomes 0 after decrease, remove product fully
+    if (productQuantity - 1 === 0) {
       dispatch(removeCartProduct({ productId: id }));
       setIsProductAddedToCart(false);
       setProductQuantity(0);
-      removeToCartToast(title);
-      try {
-        const cartData: CartProducts[] = JSON.parse(
-          localStorage.getItem(localStorageKey) || "[]"
-        );
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
-          id: string;
-          quantity: number;
-        }[];
-        const updatedCart = cartData.filter((product) => product.id !== id);
-        const newUpdatedCart = cart.filter((product) => product.id !== id);
-        localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
-        localStorage.setItem("cart", JSON.stringify(newUpdatedCart));
-      } catch (error) {
-        console.error("Error removing product from cart:", error);
+
+      if (isLogin) {
+        productRemoveMutation.mutate({ productId: id });
       }
+
+      const cartData: CartProducts[] = JSON.parse(
+        localStorage.getItem(localStorageKey) || "[]"
+      );
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+        id: string;
+        quantity: number;
+      }[];
+
+      const updatedCart = cartData.filter((product) => product.id !== id);
+      const newUpdatedCart = cart.filter((product) => product.id !== id);
+
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedCart));
+      localStorage.setItem("cart", JSON.stringify(newUpdatedCart));
       return;
     }
+
     setProductQuantity((prev) => prev - 1);
+
+    productQuantityMutation.mutate({
+      productId: id,
+      quantity: 1,
+      type: "remove",
+    });
+
     try {
       const cartData: CartProducts[] = JSON.parse(
         localStorage.getItem(localStorageKey) || "[]"
@@ -519,17 +606,19 @@ const ProductBtn = ({
         id: string;
         quantity: number;
       }[];
-      const existingProductInCart = cart.find((product) => product.id === id);
+
       const existingProduct = cartData.find((product) => product.id === id);
-      if (existingProduct) {
+      const existingProductInCart = cart.find((product) => product.id === id);
+
+      if (existingProduct && existingProduct.quantity > 1) {
         existingProduct.quantity -= 1;
-        // TODO :CHECK
-        localStorage.setItem(localStorageKey, JSON.stringify(cartData));
       }
-      if (existingProductInCart) {
+      if (existingProductInCart && existingProductInCart.quantity > 1) {
         existingProductInCart.quantity -= 1;
-        localStorage.setItem("cart", JSON.stringify(cart));
       }
+
+      localStorage.setItem(localStorageKey, JSON.stringify(cartData));
+      localStorage.setItem("cart", JSON.stringify(cart));
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
