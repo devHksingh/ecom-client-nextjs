@@ -86,6 +86,11 @@ const updateCartQuantity = async (data: { productId: string, quantity: number, t
     return response
 }
 
+const addToWishlist =  async (data: { productId: string }) => {
+    const response = await api.post('/api/v1/wishList/addToWishlist', data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -97,5 +102,6 @@ export {
     addToCart,
     multilpeProductAddToCart,
     removeFromCart,
-    updateCartQuantity
+    updateCartQuantity,
+    addToWishlist
 }
