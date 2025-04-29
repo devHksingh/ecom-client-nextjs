@@ -283,6 +283,7 @@ export default async function SingleProductPage({
                     imageUrl={product.image}
                     price={(product.price - product.salePrice)}
                     totalStock={product.totalStock}
+                    currency={product.currency}
                   />
                 </div>
                 <div className="p-1 mt-1">
