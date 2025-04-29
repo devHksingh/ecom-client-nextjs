@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono,Black_Han_Sans, Montserrat } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "./StoreProvider";
 import QueryProvider from "./QueryProvider";
@@ -16,18 +16,19 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-const blackHanSans = Black_Han_Sans({
-  weight: [ '400'],
-  variable:"--font-black-han-sans",
-  subsets: ["latin"],
-  display: 'swap'
-})
+// const blackHanSans = Black_Han_Sans({
+//   weight: [ '400'],
+//   variable:"--font-black-han-sans",
+//   subsets: ["latin"],
+//   display: 'swap'
+// })
 const montserrat = Montserrat({
   weight: [ '400','500','100','200','600','700','800'],
   variable:"--font-black-han-sans",
   subsets: ["latin"],
   display: 'swap'
 })
+// ${blackHanSans.variable}
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -43,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${blackHanSans.variable} antialiased bg-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  antialiased bg-white`}
       >
         <StoreProvider >
           <QueryProvider>

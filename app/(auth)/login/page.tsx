@@ -55,7 +55,7 @@ const LoginPage = () => {
       const user = { id, name, email, accessToken, refreshToken };
       sessionStorage.setItem("user", JSON.stringify(user));
 
-      // router.push('/')
+      router.push('/')
     },
     onError: (err: AxiosError<ErrorResponse>) => {
       const errorMsg =

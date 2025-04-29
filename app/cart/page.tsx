@@ -452,7 +452,7 @@ const CartPage = () => {
               </div>
               <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
                 <p>Subtotal</p>
-                <p>${totalPrice}</p>
+                <p>$ {totalPrice}</p>
               </div>
               <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
                 <p>Shipping estimate</p>
@@ -464,11 +464,11 @@ const CartPage = () => {
               </div>
               <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
                 <p>Order total</p>
-                <p>${totalPrice}</p>
+                <p>$ {totalPrice}</p>
               </div>
 
               <Button className="w-full mt-4 bg-indigo-500 hover:bg-indigo-600  text-md">
-                CheckOut
+                <Link href={'/checkout'}>CheckOut</Link>
               </Button>
             </div>
             <p className="mt-2 text-md">
