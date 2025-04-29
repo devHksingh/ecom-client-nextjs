@@ -9,7 +9,7 @@ const useAuth = () => {
     const userReduxState = useAppSelector((state) => state.auth)
     const { accessToken, isLogin } = userReduxState
     useEffect(() => {
-        if (!accessToken || !isLogin) {
+        if (!isLogin || !accessToken) {
             const userData = JSON.parse(sessionStorage.getItem('user') || '{}')
             if (userData.accessToken) {
                 const { id, name, email, accessToken, refreshToken } = userData
