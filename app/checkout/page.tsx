@@ -14,6 +14,7 @@ import z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 import { AxiosError } from "axios";
+import { Button } from "@/components/ui/button";
 
 interface UserCartData {
   productId: string;
@@ -73,6 +74,7 @@ export default function CheckOutPage() {
   const [userPhoneNumber, setUserPhoneNumber] = useState("");
   const [updateAddressErrMsg, setUpdateAddressErrMsg] = useState("");
   const [isValidUserInfo, setIsValidUserInfo] = useState(false);
+  const [isUserValidAddress, setIsUserValidAddress] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const userReduxState = useAppSelector((state) => state.user);
@@ -125,7 +127,7 @@ export default function CheckOutPage() {
     mutationFn: updateAddress,
     onSuccess: (response) => {
       reset();
-      console.log("update address response", response);
+      setIsValidUserInfo(true);
       const { isAccessTokenExp, user } = response.data;
       if (isAccessTokenExp) {
         const user = JSON.parse(sessionStorage.getItem("user") || "{}");
@@ -320,9 +322,62 @@ export default function CheckOutPage() {
   return (
     <div className=" container">
       {/* UserInfo */}
-      <div>
+      <div className="mt-8">
         {isValidUserInfo ? (
-          <div>{/* show user info */}</div>
+          <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
+            {/* show user info */}
+            <div className="border-b p-2 rounded-lg flex flex-col gap-2 pb-6">
+              <h2 className="text-xl font-medium mb-4 mt-2 ">
+                Contact information
+              </h2>
+              <div className="flex flex-col items-start gap-1">
+                <span className="block font-medium text-left opacity-80">
+                  Email address
+                </span>
+                <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                  {userEmail}
+                </span>
+              </div>
+              <div className="flex flex-col items-start gap-1">
+                <span className="block font-medium text-left opacity-80">
+                  Phone Number
+                </span>
+                <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                  {userPhoneNumber}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-4 mt-6">
+              <h2 className="text-xl font-medium mb-4 mt-2 ">Shipping information</h2>
+              <div className="space-y-4">
+                <div className="flex flex-col items-start gap-1">
+                  <span className="block font-medium text-left opacity-80">
+                    Name
+                  </span>
+                  <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                    {userName}
+                  </span>
+                </div>
+                <div className="flex flex-col items-start gap-1">
+                  <span className="block font-medium text-left opacity-80">
+                  Address
+                  </span>
+                  <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                    {userAddress}
+                  </span>
+                </div>
+                <div className="flex flex-col items-start gap-1">
+                  <span className="block font-medium text-left opacity-80">
+                  Postal code
+                  </span>
+                  <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
+                    {userPincode}
+                  </div>
+                  <Button className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4">Update </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           <div>
             <h2 className="text-2xl font-medium mt-4">Shipping information</h2>
