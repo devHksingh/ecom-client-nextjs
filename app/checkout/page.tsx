@@ -15,6 +15,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
 
 interface UserCartData {
   productId: string;
@@ -79,6 +81,31 @@ export default function CheckOutPage() {
   const dispatch = useAppDispatch();
   const userReduxState = useAppSelector((state) => state.user);
   const userAuthReduxState = useAppSelector((state) => state.auth);
+
+  const formatPrice = (amount: number, currency: string) => {
+    let formatedPrice: string;
+    switch (currency) {
+      case "USD":
+        formatedPrice = `${"$"}${amount}`;
+        break;
+      case "EUR":
+        formatedPrice = `${"$"}${amount}`;
+        break;
+      case "INR":
+        formatedPrice = `${"₹"}${amount}`;
+        break;
+      case "RUB":
+        formatedPrice = `${"₽"}${amount}`;
+        break;
+      case "GBP":
+        formatedPrice = `${"£"}${amount}`;
+        break;
+      default:
+        formatedPrice = `${"₹"}${amount}`;
+        break;
+    }
+    return formatedPrice;
+  };
 
   // if redux store have user info
   useEffect(() => {
@@ -466,7 +493,95 @@ export default function CheckOutPage() {
         )}
       </div>
       {/* User cart info */}
-      <div></div>
+      <div>
+      {validProducts.length > 0 && (
+        <div className="mt-16 flex flex-col lg:flex-row justify-between">
+          <ul
+            role="list"
+            className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+          >
+            {validProducts.map((item, index) => (
+              <li key={index}>
+                <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                  <Image
+                    src={item.product.image}
+                    alt={item.product.title}
+                    width={50}
+                    height={50}
+                    priority
+                    className="size-full object-contain"
+                  />
+                </div>
+                <div className="ml-4 flex flex-1 flex-col">
+                  <div>
+                    <div className="flex justify-between text-base font-medium text-gray-900">
+                      <h3>
+                        <Link href={`/products/${item.product._id}`}>
+                          {item.product.title}
+                        </Link>
+                      </h3>
+                      <p className="ml-4">
+                        {" "}
+                        {formatPrice(item.product.price, item.product.currency)}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {item.product.brand}
+                    </p>
+                  </div>
+                  <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                    <p className="text-gray-500">Qty {item.quantity}</p>
+
+                    <div className="flex">
+                      <button
+                        type="button"
+                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                        // onClick={() => handleRemoveProduct(item.product._id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="lg:w-[42%] mt-6 space-y-6">
+            <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
+            <div className="space-y-4 divide-y-2">
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p className="">Total Items</p>
+                <p>{totalQuantity}</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Subtotal</p>
+                <p>$ {totalPrice}</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Shipping estimate</p>
+                <p>$ 0</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Tax estimate</p>
+                <p>$ 0</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Order total</p>
+                <p>$ {totalPrice}</p>
+              </div>
+
+              <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
+                <Link href={'/checkout'}>PlaceOrder</Link>
+              </Button>
+            </div>
+            <p className="mt-2 text-md">
+              <span className="font-bold">Note:</span> Order price is calculated
+              on dollar currency{" "}
+            </p>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }
