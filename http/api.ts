@@ -104,6 +104,10 @@ const getUser = async () => {
     const response = await api.get('/api/v1/users/getuser')
     return response
 }
+const updateAddress = async (data:{address:string,pinCode:string}) => {
+    const response = await api.post('/api/v1/users/updateAddress',data)
+    return response
+}
 
 export {
     registerUser,
@@ -120,5 +124,6 @@ export {
     addToWishlist,
     removeWishlist,
     getStatusmultipleProduct,
-    getUser
+    getUser,
+    updateAddress
 }
