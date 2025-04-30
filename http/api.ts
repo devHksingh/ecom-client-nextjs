@@ -86,16 +86,16 @@ const updateCartQuantity = async (data: { productId: string, quantity: number, t
     return response
 }
 
-const addToWishlist =  async (data: { productId: string }) => {
+const addToWishlist = async (data: { productId: string }) => {
     const response = await api.post('/api/v1/wishList/addToWishlist', data)
     return response
 }
-const removeWishlist =  async (data: { productId: string }) => {
+const removeWishlist = async (data: { productId: string }) => {
     const response = await api.post('/api/v1/wishList/removeWishlist', data)
     return response
 }
 
-const getStatusmultipleProduct = async (data: { productId: string,quantity:number }[]) => {
+const getStatusmultipleProduct = async (data: { productId: string, quantity: number }[]) => {
     const response = await api.post('/api/v1/products/getStatusmultipleProduct', data)
     return response
 }
@@ -104,8 +104,8 @@ const getUser = async () => {
     const response = await api.get('/api/v1/users/getuser')
     return response
 }
-const updateAddress = async (data:{address:string,pinCode:string}) => {
-    const response = await api.post('/api/v1/users/updateAddress',data)
+const updateAddress = async (data: { address: string, pinCode: string, phoneNumber: string }) => {
+    const response = await api.post('/api/v1/users/updateAddress', data)
     return response
 }
 
