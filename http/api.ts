@@ -95,6 +95,11 @@ const removeWishlist =  async (data: { productId: string }) => {
     return response
 }
 
+const getStatusmultipleProduct = async (data: { productId: string,quantity:number }[]) => {
+    const response = await api.post('/api/v1/products/getStatusmultipleProduct', data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -108,5 +113,6 @@ export {
     removeFromCart,
     updateCartQuantity,
     addToWishlist,
-    removeWishlist
+    removeWishlist,
+    getStatusmultipleProduct
 }
