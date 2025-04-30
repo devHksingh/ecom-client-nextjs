@@ -1,6 +1,6 @@
 "use client";
 
-import { getStatusmultipleProduct, getUser } from "@/http/api";
+import { getStatusmultipleProduct, getUser, updateAddress } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
@@ -9,6 +9,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CartItemsPostReqProps } from "../cart/page";
 import { addInfo } from "@/lib/store/features/user/userSlice";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { LoaderCircle } from "lucide-react";
+import { AxiosError } from "axios";
 
 interface UserCartData {
   productId: string;
@@ -23,6 +28,32 @@ interface invalidProductsProps {
   quantity: number;
   reason: string;
 }
+
+interface FormFields {
+  address: string;
+  pinCode: string;
+  phoneNumber: string;
+}
+
+interface ErrorResponse {
+  message: string;
+}
+
+const formSchema = z.object({
+  address: z
+    .string()
+    .trim()
+    .min(4, "Enter valid address with 4 character is long"),
+  pinCode: z
+    .string()
+    .trim()
+    .min(6, "Enter vaild pincode .Pincode must be 6 character is long"),
+  phoneNumber: z
+    .string()
+    .trim()
+    .min(10, "phoneNumber must be 10 digit")
+    .max(10, "phoneNumber must be 10 digit"),
+});
 
 export default function CheckOutPage() {
   const [validProducts, setValidProducts] = useState<apiCartProduct[] | []>([]);
@@ -39,6 +70,9 @@ export default function CheckOutPage() {
   const [userAddress, setUserAddress] = useState("");
   const [userPincode, setUserPincode] = useState("");
   const [userName, setUserName] = useState("");
+  const [userPhoneNumber, setUserPhoneNumber] = useState("");
+  const [updateAddressErrMsg, setUpdateAddressErrMsg] = useState("");
+  const [isValidUserInfo, setIsValidUserInfo] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const userReduxState = useAppSelector((state) => state.user);
@@ -51,11 +85,13 @@ export default function CheckOutPage() {
       setUserPincode(userReduxState.pincode);
       setUserName(userAuthReduxState.userName);
       setUserEmail(userAuthReduxState.useremail);
+      setUserPhoneNumber(userReduxState.phoneNumber);
     }
   }, [
     userAuthReduxState.userName,
     userAuthReduxState.useremail,
     userReduxState.address,
+    userReduxState.phoneNumber,
     userReduxState.pincode,
   ]);
 
@@ -63,10 +99,62 @@ export default function CheckOutPage() {
   const { data: UserInfoData } = useQuery({
     queryKey: ["userInfo"],
     queryFn: getUser,
-    staleTime: 40 * 60 * 1000,
-    refetchInterval: 41 * 60 * 1000,
-    refetchIntervalInBackground: true,
     enabled: !userReduxState.address,
+  });
+
+  //
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormFields>({
+    resolver: zodResolver(formSchema),
+  });
+  const onSubmit: SubmitHandler<FormFields> = (data) => {
+    console.log(data);
+    addressMutation.mutate({
+      address: data.address,
+      pinCode: data.pinCode,
+      phoneNumber: data.phoneNumber,
+    });
+  };
+
+  const addressMutation = useMutation({
+    mutationKey: ["updateUserAddress"],
+    mutationFn: updateAddress,
+    onSuccess: (response) => {
+      reset();
+      console.log("update address response", response);
+      const { isAccessTokenExp, user } = response.data;
+      if (isAccessTokenExp) {
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+      const { email, name, pinCode, address, phoneNumber } = user;
+      dispatch(addInfo({ address, phoneNumber, pincode: pinCode }));
+      setUserName(name);
+      setUserAddress(address);
+      setUserPhoneNumber(phoneNumber);
+      setUserPincode(pinCode);
+      setUserEmail(email);
+    },
+    onError: (err: AxiosError<ErrorResponse>) => {
+      const errorMsg =
+        err.response?.data.message || "Something went wrong.Try it again!";
+      setUpdateAddressErrMsg(errorMsg);
+    },
   });
 
   useEffect(() => {
@@ -176,6 +264,18 @@ export default function CheckOutPage() {
     }
   }, [userState, userCartData]);
 
+  useEffect(() => {
+    // setIsValidUserInfo userAddress userPincode
+    if (userPincode === "361365" && userAddress === "DUMMY ADDRESS") {
+      setIsValidUserInfo(false);
+    } else {
+      setIsValidUserInfo(true);
+    }
+    if (userPincode === "" && userAddress === "") {
+      setIsValidUserInfo(false);
+    }
+  }, [userAddress, userPincode]);
+
   if (mutation.isPending) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -217,7 +317,103 @@ export default function CheckOutPage() {
     );
   }
 
-  return <div></div>;
+  return (
+    <div className=" container">
+      {/* UserInfo */}
+      <div>
+        {isValidUserInfo ? (
+          <div>{/* show user info */}</div>
+        ) : (
+          <div>
+            <h2 className="text-2xl font-medium mt-4">Shipping information</h2>
+            <div className="mx-auto  text-center">
+              {addressMutation.isError && (
+                <span className=" mb-1 text-sm text-red-500 text-center ">
+                  {updateAddressErrMsg}
+                </span>
+              )}
+            </div>
+            {/* update form */}
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col justify-center  gap-2 p-4 mx-auto border rounded-md shadow mt-4"
+            >
+              <label className="flex flex-col items-start gap-1 ">
+                <span className="block font-medium text-left opacity-80">
+                  Address
+                </span>
+                <input
+                  type="text"
+                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                  {...register("address")}
+                  placeholder="Enter address"
+                />
+              </label>
+              {errors.address && (
+                <span className="text-sm font-medium text-red-600">
+                  {errors.address.message}
+                </span>
+              )}
+              <label className="flex flex-col items-start gap-1">
+                <span className="block font-medium text-left opacity-80">
+                  Postal code
+                </span>
+                <input
+                  type="text"
+                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                  {...register("pinCode")}
+                  placeholder="Enter 6 digit pin code"
+                />
+              </label>
+              {errors.pinCode && (
+                <span className="text-sm font-medium text-red-600">
+                  {errors.pinCode.message}
+                </span>
+              )}
+              <label className="flex flex-col items-start gap-1">
+                <span className="block font-medium text-left opacity-80">
+                  phoneNumber
+                </span>
+                <input
+                  type="text"
+                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                  {...register("phoneNumber")}
+                  placeholder="Enter 10 digit phone number"
+                />
+              </label>
+              {errors.phoneNumber && (
+                <span className="text-sm font-medium text-red-600">
+                  {errors.phoneNumber.message}
+                </span>
+              )}
+              {/* <Button className="mt-4 mb-2 bg-indigo-500 hover:bg-indigo-600">Save</Button> */}
+              <button
+                className={` bg-indigo-500 hover:bg-indigo-600 transition-colors text-stone-100 hover:text-stone-100 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${
+                  addressMutation.isPending
+                    ? "cursor-not-allowed opacity-45"
+                    : ""
+                }`}
+                type="submit"
+                disabled={addressMutation.isPending}
+              >
+                {addressMutation.isPending && (
+                  <span>
+                    <LoaderCircle
+                      strokeWidth={2}
+                      className="text-bg-cta animate-spin"
+                    />
+                  </span>
+                )}
+                Submit
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+      {/* User cart info */}
+      <div></div>
+    </div>
+  );
 }
 
 /*
