@@ -100,6 +100,11 @@ const getStatusmultipleProduct = async (data: { productId: string,quantity:numbe
     return response
 }
 
+const getUser = async () => {
+    const response = await api.get('/api/v1/users/getuser')
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -114,5 +119,6 @@ export {
     updateCartQuantity,
     addToWishlist,
     removeWishlist,
-    getStatusmultipleProduct
+    getStatusmultipleProduct,
+    getUser
 }
