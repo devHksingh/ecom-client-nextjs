@@ -27,7 +27,7 @@ interface apiCartProduct {
   quantity: number;
 }
 interface invalidProductsProps {
-  product?: ProductProps;
+  product: ProductProps;
   quantity: number;
   reason: string;
 }
@@ -130,6 +130,14 @@ export default function CheckOutPage() {
     queryFn: getUser,
     enabled: !userReduxState.address,
   });
+
+  // TODO: REMOVE IN PRODUCTION ONLY TESTING PURPOSE
+  useEffect(()=>{
+    if(invalidProducts){
+      console.log("invalidProducts",invalidProducts);
+      
+    }
+  },[invalidProducts])
 
   //
   const {
@@ -349,7 +357,7 @@ export default function CheckOutPage() {
   return (
     <div className=" container">
       {/* UserInfo */}
-      <div className="mt-8">
+      <div className="mt-8 max-w-1/2">
         {isValidUserInfo ? (
           <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
             {/* show user info */}
@@ -400,7 +408,9 @@ export default function CheckOutPage() {
                   <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
                     {userPincode}
                   </div>
-                  <Button className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4">Update </Button>
+                  <Button className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4"
+                  onClick={()=>setIsValidUserInfo(false)}
+                  >Update </Button>
                 </div>
               </div>
             </div>
@@ -582,11 +592,100 @@ export default function CheckOutPage() {
         </div>
       )}
       </div>
+      <div>
+        {/* inValid product */}
+        {invalidProducts.length>0 &&(
+          <div className="space-y-2 mt-6">
+            <h2 className="text-xl font-semibold text-rose-600">Oops! Not Enough Items in Stock</h2>
+            <div className="mt-16 flex flex-col lg:flex-row justify-between">
+          
+          <ul
+            role="list"
+            className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+          >
+            {invalidProducts.map((item, index) => (
+              <li key={index}>
+                <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                  <Image
+                    src={item.product.image}
+                    alt={item.product.title}
+                    width={50}
+                    height={50}
+                    priority
+                    className="size-full object-contain"
+                  />
+                </div>
+                <div className="ml-4 flex flex-1 flex-col">
+                  <div>
+                    <div className="flex justify-between text-base font-medium text-gray-900">
+                      <h3>
+                        <Link href={`/products/${item.product._id}`}>
+                          {item.product.title}
+                        </Link>
+                      </h3>
+                      <p className="ml-4">
+                        {" "}
+                        {formatPrice(item.product.price, item.product.currency)}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {item.product.brand}
+                    </p>
+                  </div>
+                  <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                    <p className="text-gray-500">Qty {item.quantity}</p>
+
+                    <div className="flex">
+                     
+                      <p className="text-md capitalize text-red-500 font-medium">{item.reason}</p>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {/* <div className="lg:w-[42%] mt-6 space-y-6">
+            <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
+            <div className="space-y-4 divide-y-2">
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p className="">Total Items</p>
+                <p>{totalQuantity}</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Subtotal</p>
+                <p>$ {totalPrice}</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Shipping estimate</p>
+                <p>$ 0</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Tax estimate</p>
+                <p>$ 0</p>
+              </div>
+              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                <p>Order total</p>
+                <p>$ {totalPrice}</p>
+              </div>
+
+              <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
+                <Link href={'/checkout'}>PlaceOrder</Link>
+              </Button>
+            </div>
+            <p className="mt-2 text-md">
+              <span className="font-bold">Note:</span> Order price is calculated
+              on dollar currency{" "}
+            </p>
+          </div> */}
+        </div>
+          </div>)}
+      </div>
     </div>
   );
 }
 
 /*
+<h2>Oops! Not Enough Items in Stock</h2>
     0.check user is login => not => redirect to login page
     1 get cart data from local storage and hit getStatusmultipleProduct
     2.valid api respose
