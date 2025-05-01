@@ -1,6 +1,11 @@
 "use client";
 
-import { getStatusmultipleProduct, getUser, removeFromCart, updateAddress } from "@/http/api";
+import {
+  getStatusmultipleProduct,
+  getUser,
+  removeFromCart,
+  updateAddress,
+} from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
@@ -76,7 +81,7 @@ export default function CheckOutPage() {
   const [userName, setUserName] = useState("");
   const [userPhoneNumber, setUserPhoneNumber] = useState("");
   const [updateAddressErrMsg, setUpdateAddressErrMsg] = useState("");
-  const [removeProductId,setRemoveProductId] = useState("")
+  const [removeProductId, setRemoveProductId] = useState("");
   const [isValidUserInfo, setIsValidUserInfo] = useState(false);
   const [isUserValidAddress, setIsUserValidAddress] = useState(false);
   const router = useRouter();
@@ -136,12 +141,11 @@ export default function CheckOutPage() {
   });
 
   // TODO: REMOVE IN PRODUCTION ONLY TESTING PURPOSE
-  useEffect(()=>{
-    if(invalidProducts){
-      console.log("invalidProducts",invalidProducts);
-      
+  useEffect(() => {
+    if (invalidProducts) {
+      console.log("invalidProducts", invalidProducts);
     }
-  },[invalidProducts])
+  }, [invalidProducts]);
 
   //
   const {
@@ -166,41 +170,61 @@ export default function CheckOutPage() {
       console.log("productRemoveMutation response--", response);
       queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
       // filter productId from   validProducts array
-      const isProductExistValidProducts = validProducts.find((item)=> item.product._id === removeProductId)
-      if(isProductExistValidProducts){
-        const updatedProducts = validProducts.filter((item)=> item.product._id !== removeProductId)
-        setValidProducts(updatedProducts)
+      const isProductExistValidProducts = validProducts.find(
+        (item) => item.product._id === removeProductId
+      );
+      if (isProductExistValidProducts) {
+        const updatedProducts = validProducts.filter(
+          (item) => item.product._id !== removeProductId
+        );
+        setValidProducts(updatedProducts);
       }
-      const isProductExistInValidProducts = invalidProducts.find((item)=>item.product._id === removeProductId)
-      if(isProductExistInValidProducts){
-        const updatedProducts = invalidProducts.filter((item)=> item.product._id !== removeProductId)
-        setInvalidProducts(updatedProducts)
+      const isProductExistInValidProducts = invalidProducts.find(
+        (item) => item.product._id === removeProductId
+      );
+      if (isProductExistInValidProducts) {
+        const updatedProducts = invalidProducts.filter(
+          (item) => item.product._id !== removeProductId
+        );
+        setInvalidProducts(updatedProducts);
       }
-      
+
       toast.success("Product is remove", "Product is remove from the cart.");
     },
-    onError:()=>{
-      toast.error("Product is not remove", "Unable to remove product.Try it again!.");
-    }
+    onError: () => {
+      toast.error(
+        "Product is not remove",
+        "Unable to remove product.Try it again!."
+      );
+    },
   });
   const handleRemoveProduct = (productId: string) => {
-    setRemoveProductId(productId)
+    setRemoveProductId(productId);
     productRemoveMutation.mutate({ productId });
     // remove product form local storage {loginUserCart,logoutUserCart,cart}
-    const loginUserCart = JSON.parse(localStorage.getItem("loginUserCart") || "[]") as { id: string; quantity: number }[];
-    const logoutUserCart = JSON.parse(localStorage.getItem("logoutUserCart") || "[]") as { id: string; quantity: number }[];
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as { id: string; quantity: number }[];
-    if(loginUserCart.length>0){
-      const updatedCart = loginUserCart.filter((item)=> item.id !==productId)
-      localStorage.setItem("loginUserCart",JSON.stringify(updatedCart))
+    const loginUserCart = JSON.parse(
+      localStorage.getItem("loginUserCart") || "[]"
+    ) as { id: string; quantity: number }[];
+    const logoutUserCart = JSON.parse(
+      localStorage.getItem("logoutUserCart") || "[]"
+    ) as { id: string; quantity: number }[];
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+      id: string;
+      quantity: number;
+    }[];
+    if (loginUserCart.length > 0) {
+      const updatedCart = loginUserCart.filter((item) => item.id !== productId);
+      localStorage.setItem("loginUserCart", JSON.stringify(updatedCart));
     }
-    if(logoutUserCart.length>0){
-      const updatedCart = logoutUserCart.filter((item)=> item.id !==productId)
-      localStorage.setItem("logoutUserCart",JSON.stringify(updatedCart))
+    if (logoutUserCart.length > 0) {
+      const updatedCart = logoutUserCart.filter(
+        (item) => item.id !== productId
+      );
+      localStorage.setItem("logoutUserCart", JSON.stringify(updatedCart));
     }
-    if(cart.length>0){
-      const updatedCart = cart.filter((item)=> item.id !==productId)
-      localStorage.setItem("cart",JSON.stringify(updatedCart))
+    if (cart.length > 0) {
+      const updatedCart = cart.filter((item) => item.id !== productId);
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
     }
   };
 
@@ -403,302 +427,326 @@ export default function CheckOutPage() {
 
   return (
     <div className=" container">
-      {/* UserInfo */}
-      <div className="mt-8 max-w-1/2">
-        {isValidUserInfo ? (
-          <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
-            {/* show user info */}
-            <div className="border-b p-2 rounded-lg flex flex-col gap-2 pb-6">
-              <h2 className="text-xl font-medium mb-4 mt-2 ">
-                Contact information
-              </h2>
-              <div className="flex flex-col items-start gap-1">
-                <span className="block font-medium text-left opacity-80">
-                  Email address
-                </span>
-                <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
-                  {userEmail}
-                </span>
-              </div>
-              <div className="flex flex-col items-start gap-1">
-                <span className="block font-medium text-left opacity-80">
-                  Phone Number
-                </span>
-                <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
-                  {userPhoneNumber}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-4 mt-6">
-              <h2 className="text-xl font-medium mb-4 mt-2 ">Shipping information</h2>
-              <div className="space-y-4">
+      <div className="flex flex-col lg:flex-row lg:justify-between">
+        {/* UserInfo */}
+        <div className="mt-8  lg:w-[40%]">
+          {isValidUserInfo ? (
+            <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
+              {/* show user info */}
+              <div className="border-b p-2 rounded-lg flex flex-col gap-2 pb-6">
+                <h2 className="text-xl font-medium mb-4 mt-2 ">
+                  Contact information
+                </h2>
                 <div className="flex flex-col items-start gap-1">
                   <span className="block font-medium text-left opacity-80">
-                    Name
+                    Email address
                   </span>
-                  <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
-                    {userName}
+                  <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                    {userEmail}
                   </span>
                 </div>
                 <div className="flex flex-col items-start gap-1">
                   <span className="block font-medium text-left opacity-80">
-                  Address
+                    Phone Number
                   </span>
-                  <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
-                    {userAddress}
+                  <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                    {userPhoneNumber}
                   </span>
                 </div>
-                <div className="flex flex-col items-start gap-1">
-                  <span className="block font-medium text-left opacity-80">
-                  Postal code
-                  </span>
-                  <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
-                    {userPincode}
+              </div>
+              <div className="space-y-4 mt-6">
+                <h2 className="text-xl font-medium mb-4 mt-2 ">
+                  Shipping information
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="block font-medium text-left opacity-80">
+                      Name
+                    </span>
+                    <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                      {userName}
+                    </span>
                   </div>
-                  <Button className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4"
-                  onClick={()=>setIsValidUserInfo(false)}
-                  >Update </Button>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="block font-medium text-left opacity-80">
+                      Address
+                    </span>
+                    <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                      {userAddress}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="block font-medium text-left opacity-80">
+                      Postal code
+                    </span>
+                    <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
+                      {userPincode}
+                    </div>
+                    <Button
+                      className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4"
+                      onClick={() => setIsValidUserInfo(false)}
+                    >
+                      Update{" "}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-2xl font-medium mt-4">Shipping information</h2>
-            <div className="mx-auto  text-center">
-              {addressMutation.isError && (
-                <span className=" mb-1 text-sm text-red-500 text-center ">
-                  {updateAddressErrMsg}
-                </span>
-              )}
-            </div>
-            {/* update form */}
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col justify-center  gap-2 p-4 mx-auto border rounded-md shadow mt-4"
-            >
-              <label className="flex flex-col items-start gap-1 ">
-                <span className="block font-medium text-left opacity-80">
-                  Address
-                </span>
-                <input
-                  type="text"
-                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                  {...register("address")}
-                  placeholder="Enter address"
-                />
-              </label>
-              {errors.address && (
-                <span className="text-sm font-medium text-red-600">
-                  {errors.address.message}
-                </span>
-              )}
-              <label className="flex flex-col items-start gap-1">
-                <span className="block font-medium text-left opacity-80">
-                  Postal code
-                </span>
-                <input
-                  type="text"
-                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                  {...register("pinCode")}
-                  placeholder="Enter 6 digit pin code"
-                />
-              </label>
-              {errors.pinCode && (
-                <span className="text-sm font-medium text-red-600">
-                  {errors.pinCode.message}
-                </span>
-              )}
-              <label className="flex flex-col items-start gap-1">
-                <span className="block font-medium text-left opacity-80">
-                  phoneNumber
-                </span>
-                <input
-                  type="text"
-                  className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                  {...register("phoneNumber")}
-                  placeholder="Enter 10 digit phone number"
-                />
-              </label>
-              {errors.phoneNumber && (
-                <span className="text-sm font-medium text-red-600">
-                  {errors.phoneNumber.message}
-                </span>
-              )}
-              {/* <Button className="mt-4 mb-2 bg-indigo-500 hover:bg-indigo-600">Save</Button> */}
-              <button
-                className={` bg-indigo-500 hover:bg-indigo-600 transition-colors text-stone-100 hover:text-stone-100 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${
-                  addressMutation.isPending
-                    ? "cursor-not-allowed opacity-45"
-                    : ""
-                }`}
-                type="submit"
-                disabled={addressMutation.isPending}
-              >
-                {addressMutation.isPending && (
-                  <span>
-                    <LoaderCircle
-                      strokeWidth={2}
-                      className="text-bg-cta animate-spin"
-                    />
+          ) : (
+            <div>
+              <h2 className="text-2xl font-medium mt-4">
+                Shipping information
+              </h2>
+              <div className="mx-auto  text-center">
+                {addressMutation.isError && (
+                  <span className=" mb-1 text-sm text-red-500 text-center ">
+                    {updateAddressErrMsg}
                   </span>
                 )}
-                Submit
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
-      {/* User cart info */}
-      <div>
-      {validProducts.length > 0 && (
-        <div className="mt-16 flex flex-col lg:flex-row justify-between">
-          <ul
-            role="list"
-            className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
-          >
-            {validProducts.map((item, index) => (
-              <li key={index}>
-                <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                  <Image
-                    src={item.product.image}
-                    alt={item.product.title}
-                    width={50}
-                    height={50}
-                    priority
-                    className="size-full object-contain"
+              </div>
+              {/* update form */}
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col justify-center  gap-2 p-4 mx-auto border rounded-md shadow mt-4"
+              >
+                <label className="flex flex-col items-start gap-1 ">
+                  <span className="block font-medium text-left opacity-80">
+                    Address
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                    {...register("address")}
+                    placeholder="Enter address"
                   />
-                </div>
-                <div className="ml-4 flex flex-1 flex-col">
-                  <div>
-                    <div className="flex justify-between text-base font-medium text-gray-900">
-                      <h3>
-                        <Link href={`/products/${item.product._id}`}>
-                          {item.product.title}
-                        </Link>
-                      </h3>
-                      <p className="ml-4">
-                        {" "}
-                        {formatPrice(item.product.price, item.product.currency)}
-                      </p>
-                    </div>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.product.brand}
-                    </p>
-                  </div>
-                  <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                    <p className="text-gray-500">Qty {item.quantity}</p>
-
-                    <div className="flex">
-                      <button
-                        type="button"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
-                        onClick={() => handleRemoveProduct(item.product._id)}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="lg:w-[42%] mt-6 space-y-6">
-            <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
-            <div className="space-y-4 divide-y-2">
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p className="">Total Items</p>
-                <p>{totalQuantity}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Subtotal</p>
-                <p>$ {totalPrice}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Shipping estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Tax estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Order total</p>
-                <p>$ {totalPrice}</p>
-              </div>
-
-              <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
-                <Link href={'/checkout'}>PlaceOrder</Link>
-              </Button>
+                </label>
+                {errors.address && (
+                  <span className="text-sm font-medium text-red-600">
+                    {errors.address.message}
+                  </span>
+                )}
+                <label className="flex flex-col items-start gap-1">
+                  <span className="block font-medium text-left opacity-80">
+                    Postal code
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                    {...register("pinCode")}
+                    placeholder="Enter 6 digit pin code"
+                  />
+                </label>
+                {errors.pinCode && (
+                  <span className="text-sm font-medium text-red-600">
+                    {errors.pinCode.message}
+                  </span>
+                )}
+                <label className="flex flex-col items-start gap-1">
+                  <span className="block font-medium text-left opacity-80">
+                    phoneNumber
+                  </span>
+                  <input
+                    type="text"
+                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                    {...register("phoneNumber")}
+                    placeholder="Enter 10 digit phone number"
+                  />
+                </label>
+                {errors.phoneNumber && (
+                  <span className="text-sm font-medium text-red-600">
+                    {errors.phoneNumber.message}
+                  </span>
+                )}
+                {/* <Button className="mt-4 mb-2 bg-indigo-500 hover:bg-indigo-600">Save</Button> */}
+                <button
+                  className={` bg-indigo-500 hover:bg-indigo-600 transition-colors text-stone-100 hover:text-stone-100 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${
+                    addressMutation.isPending
+                      ? "cursor-not-allowed opacity-45"
+                      : ""
+                  }`}
+                  type="submit"
+                  disabled={addressMutation.isPending}
+                >
+                  {addressMutation.isPending && (
+                    <span>
+                      <LoaderCircle
+                        strokeWidth={2}
+                        className="text-bg-cta animate-spin"
+                      />
+                    </span>
+                  )}
+                  Submit
+                </button>
+              </form>
             </div>
-            <p className="mt-2 text-md">
-              <span className="font-bold">Note:</span> Order price is calculated
-              on dollar currency{" "}
-            </p>
-          </div>
+          )}
         </div>
-      )}
+        {/* User cart info */}
+        <div className="lg:w-[58%]  p-2">
+          {validProducts.length > 0 && (
+            <div className="mt-6 flex flex-col  justify-between">
+              <h3 className="text-gray-900 font-medium text-2xl mb-2">Order summary</h3>
+              <ul
+                role="list"
+                className=" divide-y divide-gray-200 space-y-2 lg:w-full  p-2"
+              >
+                {validProducts.map((item, index) => (
+                  <li key={index}>
+                    <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                      <Image
+                        src={item.product.image}
+                        alt={item.product.title}
+                        width={50}
+                        height={50}
+                        priority
+                        className="size-full object-contain"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-1 flex-col">
+                      <div>
+                        <div className="flex justify-between text-base font-medium text-gray-900">
+                          <h3>
+                            <Link href={`/products/${item.product._id}`}>
+                              {item.product.title}
+                            </Link>
+                          </h3>
+                          <p className="ml-4">
+                            {" "}
+                            {formatPrice(
+                              item.product.price,
+                              item.product.currency
+                            )}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.product.brand}
+                        </p>
+                      </div>
+                      <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                        <p className="text-gray-500">Qty {item.quantity}</p>
+
+                        <div className="flex">
+                          <button
+                            type="button"
+                            className="font-medium text-indigo-600 hover:text-indigo-500"
+                            onClick={() =>
+                              handleRemoveProduct(item.product._id)
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="lg:w-full mt-6 space-y-6">
+                {/* <h3 className="text-gray-900 font-medium text-xl">
+                  Order summary
+                </h3> */}
+                <div className="space-y-4 divide-y-2">
+                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                    <p className="">Total Items</p>
+                    <p>{totalQuantity}</p>
+                  </div>
+                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                    <p>Subtotal</p>
+                    <p>$ {totalPrice}</p>
+                  </div>
+                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                    <p>Shipping estimate</p>
+                    <p>$ 0</p>
+                  </div>
+                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                    <p>Tax estimate</p>
+                    <p>$ 0</p>
+                  </div>
+                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                    <p>Order total</p>
+                    <p>$ {totalPrice}</p>
+                  </div>
+
+                  <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
+                    <Link href={"/checkout"}>PlaceOrder</Link>
+                  </Button>
+                </div>
+                <p className="mt-2 text-md">
+                  <span className="font-bold">Note:</span> Order price is
+                  calculated on dollar currency{" "}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <div>
         {/* inValid product */}
-        {invalidProducts.length>0 &&(
+        {invalidProducts.length > 0 && (
           <div className="space-y-2 mt-6">
-            <h2 className="text-xl font-semibold text-rose-600">Oops! Not Enough Items in Stock</h2>
+            <h2 className="text-xl font-semibold text-rose-600">
+              Oops! Not Enough Items in Stock
+            </h2>
             <div className="mt-16 flex flex-col lg:flex-row justify-between">
-          
-          <ul
-            role="list"
-            className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
-          >
-            {invalidProducts.map((item, index) => (
-              <li key={index}>
-                <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                  <Image
-                    src={item.product.image}
-                    alt={item.product.title}
-                    width={50}
-                    height={50}
-                    priority
-                    className="size-full object-contain"
-                  />
-                </div>
-                <div className="ml-4 flex flex-1 flex-col">
-                  <div>
-                    <div className="flex justify-between text-base font-medium text-gray-900">
-                      <h3>
-                        <Link href={`/products/${item.product._id}`}>
-                          {item.product.title}
-                        </Link>
-                      </h3>
-                      <p className="ml-4">
-                        {" "}
-                        {formatPrice(item.product.price, item.product.currency)}
-                      </p>
+              <ul
+                role="list"
+                className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+              >
+                {invalidProducts.map((item, index) => (
+                  <li key={index}>
+                    <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                      <Image
+                        src={item.product.image}
+                        alt={item.product.title}
+                        width={50}
+                        height={50}
+                        priority
+                        className="size-full object-contain"
+                      />
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.product.brand}
-                      <span className="text-md capitalize text-red-500 font-medium ml-4 bg-red-100 p-1 rounded-lg px-2">{item.reason}</span>
-                    </p>
-                  </div>
-                  <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                    <p className="text-gray-500">Qty {item.quantity}</p>
+                    <div className="ml-4 flex flex-1 flex-col">
+                      <div>
+                        <div className="flex justify-between text-base font-medium text-gray-900">
+                          <h3>
+                            <Link href={`/products/${item.product._id}`}>
+                              {item.product.title}
+                            </Link>
+                          </h3>
+                          <p className="ml-4">
+                            {" "}
+                            {formatPrice(
+                              item.product.price,
+                              item.product.currency
+                            )}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.product.brand}
+                          <span className="text-md capitalize text-red-500 font-medium ml-4 bg-red-100 p-1 rounded-lg px-2">
+                            {item.reason}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                        <p className="text-gray-500">Qty {item.quantity}</p>
 
-                    <div className="flex flex-col items-start">
-                    <button
-                        type="button"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
-                        onClick={() => handleRemoveProduct(item.product._id)}
-                      >
-                        Remove
-                      </button>
-                      
+                        <div className="flex flex-col items-start">
+                          <button
+                            type="button"
+                            className="font-medium text-indigo-600 hover:text-indigo-500"
+                            onClick={() =>
+                              handleRemoveProduct(item.product._id)
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {/* <div className="lg:w-[42%] mt-6 space-y-6">
+                  </li>
+                ))}
+              </ul>
+              {/* <div className="lg:w-[42%] mt-6 space-y-6">
             <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
             <div className="space-y-4 divide-y-2">
               <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
@@ -731,8 +779,9 @@ export default function CheckOutPage() {
               on dollar currency{" "}
             </p>
           </div> */}
-        </div>
-          </div>)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
