@@ -1,10 +1,10 @@
 "use client";
 
-import { getStatusmultipleProduct, getUser, updateAddress } from "@/http/api";
+import { getStatusmultipleProduct, getUser, removeFromCart, updateAddress } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CartItemsPostReqProps } from "../cart/page";
@@ -17,6 +17,7 @@ import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import useToast from "@/hook/useToast";
 
 interface UserCartData {
   productId: string;
@@ -75,12 +76,15 @@ export default function CheckOutPage() {
   const [userName, setUserName] = useState("");
   const [userPhoneNumber, setUserPhoneNumber] = useState("");
   const [updateAddressErrMsg, setUpdateAddressErrMsg] = useState("");
+  const [removeProductId,setRemoveProductId] = useState("")
   const [isValidUserInfo, setIsValidUserInfo] = useState(false);
   const [isUserValidAddress, setIsUserValidAddress] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const userReduxState = useAppSelector((state) => state.user);
   const userAuthReduxState = useAppSelector((state) => state.auth);
+  const queryClient = useQueryClient();
+  const toast = useToast();
 
   const formatPrice = (amount: number, currency: string) => {
     let formatedPrice: string;
@@ -155,6 +159,49 @@ export default function CheckOutPage() {
       pinCode: data.pinCode,
       phoneNumber: data.phoneNumber,
     });
+  };
+  const productRemoveMutation = useMutation({
+    mutationFn: removeFromCart,
+    onSuccess: (response) => {
+      console.log("productRemoveMutation response--", response);
+      queryClient.invalidateQueries({ queryKey: ["cartProducts"] });
+      // filter productId from   validProducts array
+      const isProductExistValidProducts = validProducts.find((item)=> item.product._id === removeProductId)
+      if(isProductExistValidProducts){
+        const updatedProducts = validProducts.filter((item)=> item.product._id !== removeProductId)
+        setValidProducts(updatedProducts)
+      }
+      const isProductExistInValidProducts = invalidProducts.find((item)=>item.product._id === removeProductId)
+      if(isProductExistInValidProducts){
+        const updatedProducts = invalidProducts.filter((item)=> item.product._id !== removeProductId)
+        setInvalidProducts(updatedProducts)
+      }
+      
+      toast.success("Product is remove", "Product is remove from the cart.");
+    },
+    onError:()=>{
+      toast.error("Product is not remove", "Unable to remove product.Try it again!.");
+    }
+  });
+  const handleRemoveProduct = (productId: string) => {
+    setRemoveProductId(productId)
+    productRemoveMutation.mutate({ productId });
+    // remove product form local storage {loginUserCart,logoutUserCart,cart}
+    const loginUserCart = JSON.parse(localStorage.getItem("loginUserCart") || "[]") as { id: string; quantity: number }[];
+    const logoutUserCart = JSON.parse(localStorage.getItem("logoutUserCart") || "[]") as { id: string; quantity: number }[];
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as { id: string; quantity: number }[];
+    if(loginUserCart.length>0){
+      const updatedCart = loginUserCart.filter((item)=> item.id !==productId)
+      localStorage.setItem("loginUserCart",JSON.stringify(updatedCart))
+    }
+    if(logoutUserCart.length>0){
+      const updatedCart = logoutUserCart.filter((item)=> item.id !==productId)
+      localStorage.setItem("logoutUserCart",JSON.stringify(updatedCart))
+    }
+    if(cart.length>0){
+      const updatedCart = cart.filter((item)=> item.id !==productId)
+      localStorage.setItem("cart",JSON.stringify(updatedCart))
+    }
   };
 
   const addressMutation = useMutation({
@@ -546,7 +593,7 @@ export default function CheckOutPage() {
                       <button
                         type="button"
                         className="font-medium text-indigo-600 hover:text-indigo-500"
-                        // onClick={() => handleRemoveProduct(item.product._id)}
+                        onClick={() => handleRemoveProduct(item.product._id)}
                       >
                         Remove
                       </button>
@@ -630,14 +677,21 @@ export default function CheckOutPage() {
                     </div>
                     <p className="mt-1 text-sm text-gray-500">
                       {item.product.brand}
+                      <span className="text-md capitalize text-red-500 font-medium ml-4 bg-red-100 p-1 rounded-lg px-2">{item.reason}</span>
                     </p>
                   </div>
                   <div className="flex flex-1 items-end justify-between text-sm mb-4">
                     <p className="text-gray-500">Qty {item.quantity}</p>
 
-                    <div className="flex">
-                     
-                      <p className="text-md capitalize text-red-500 font-medium">{item.reason}</p>
+                    <div className="flex flex-col items-start">
+                    <button
+                        type="button"
+                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                        onClick={() => handleRemoveProduct(item.product._id)}
+                      >
+                        Remove
+                      </button>
+                      
                     </div>
                   </div>
                 </div>
