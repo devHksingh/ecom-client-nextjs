@@ -585,7 +585,9 @@ export default function CheckOutPage() {
         <div className="lg:w-[58%]  p-2">
           {validProducts.length > 0 && (
             <div className="mt-6 flex flex-col  justify-between">
-              <h3 className="text-gray-900 font-medium text-2xl mb-2">Order summary</h3>
+              <h3 className="text-gray-900 font-medium text-2xl mb-2">
+                Order summary
+              </h3>
               <ul
                 role="list"
                 className=" divide-y divide-gray-200 space-y-2 lg:w-full  p-2"
@@ -613,7 +615,7 @@ export default function CheckOutPage() {
                           <p className="ml-4">
                             {" "}
                             {formatPrice(
-                              item.product.price,
+                              item.product.price - item.product.salePrice,
                               item.product.currency
                             )}
                           </p>
@@ -715,7 +717,7 @@ export default function CheckOutPage() {
                           <p className="ml-4">
                             {" "}
                             {formatPrice(
-                              item.product.price,
+                              item.product.price - item.product.salePrice,
                               item.product.currency
                             )}
                           </p>
