@@ -367,7 +367,8 @@ export default function CheckOutPage() {
         acc += quantity;
         return acc;
       }, 0);
-      setTotalPrice(grandTotal);
+      const price = Number(grandTotal.toFixed(2))
+      setTotalPrice(price);
       setTotalQuantity(totalItems);
       setIsOrderPalced(true);
       toast.success(
@@ -400,6 +401,7 @@ export default function CheckOutPage() {
     });
     // placeOrderMutation.mutate(validProducts)
     placeOrderMutation.mutate(placeOrderProduct);
+    // placeOrderMutation.mutate([{"productId":"67b5fc72ebac013fb5537338","quantity":1},{"productId":"67a4f93837df6986263b6e4e","quantity":1},{"productId":"67a4fd8a37df6986263b6e63","quantity":1}]);
   };
 
   useEffect(() => {
@@ -662,6 +664,10 @@ export default function CheckOutPage() {
             </div>
 
             <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Total Items:</span>
+                <span className="text-gray-800">{totalQuantity}</span>
+              </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal:</span>
                 <span className="text-gray-800">$ {totalPrice}</span>
