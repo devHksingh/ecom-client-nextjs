@@ -109,6 +109,11 @@ const updateAddress = async (data: { address: string, pinCode: string, phoneNumb
     return response
 }
 
+const placeMultipleOrder = async(data:{productId: string, quantity: number}[])=>{
+    const response = await api.post('/api/v1/orders/placeMultipleOrder',data)
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -125,5 +130,6 @@ export {
     removeWishlist,
     getStatusmultipleProduct,
     getUser,
-    updateAddress
+    updateAddress,
+    placeMultipleOrder
 }
