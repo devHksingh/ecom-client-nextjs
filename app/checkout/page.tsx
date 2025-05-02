@@ -3,6 +3,7 @@
 import {
   getStatusmultipleProduct,
   getUser,
+  placeMultipleOrder,
   removeFromCart,
   updateAddress,
 } from "@/http/api";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import useToast from "@/hook/useToast";
+
 
 interface UserCartData {
   productId: string;
@@ -48,6 +50,36 @@ interface ErrorResponse {
   message: string;
 }
 
+interface InvalidProductsProps {
+  product: ProductProps;
+  quantity: number;
+  reason: string;
+}
+
+interface OrderProps {
+  trackingId: string;
+  orderId: string;
+  orderStatus: string;
+  orderPlaceOn: string;
+  userName: string;
+  userAddress: string;
+  userPhoneNumber: string;
+  userPinCode: string;
+  userEmail: string;
+  productDetails: {
+    id: string;
+    title: string;
+    price: number;
+    image: string;
+    category: string[];
+    discountPrice: number;
+    currency: string;
+  };
+  quantity: number;
+  totalPrice: number;
+}
+
+
 const formSchema = z.object({
   address: z
     .string()
@@ -66,9 +98,9 @@ const formSchema = z.object({
 
 export default function CheckOutPage() {
   const [validProducts, setValidProducts] = useState<apiCartProduct[] | []>([]);
-  const [invalidProducts, setInvalidProducts] = useState<
-    invalidProductsProps[] | []
-  >([]);
+  // const [invalidProducts, setInvalidProducts] = useState<
+  //   invalidProductsProps[] | []
+  // >([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -84,6 +116,15 @@ export default function CheckOutPage() {
   const [removeProductId, setRemoveProductId] = useState("");
   const [isValidUserInfo, setIsValidUserInfo] = useState(false);
   const [isUserValidAddress, setIsUserValidAddress] = useState(false);
+  const [isOrderPalced, setIsOrderPalced] = useState(false);
+  const [invalidProducts, setInvalidProducts] = useState<
+    InvalidProductsProps[] | []
+  >([]);
+  const [orderPlacedResponse, setOrderPlacedResponse] = useState<
+    OrderProps[] | []
+  >([]);
+  const [placeOrderError, setPlaceOrderError] = useState("");
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   const userReduxState = useAppSelector((state) => state.user);
@@ -265,6 +306,69 @@ export default function CheckOutPage() {
     },
   });
 
+  const placeOrderMutation = useMutation({
+    mutationKey: ["placeOrder"],
+    mutationFn: placeMultipleOrder,
+    onSuccess: (response) => {
+      /*
+      setInvalidProducts
+      setOrderPlacedResponse
+      */
+      const { orders, invalidProducts, validProducts, isAccessTokenExp } =
+        response.data;
+      //  update user token if exp
+      if (isAccessTokenExp) {
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+      if (invalidProducts) {
+        setInvalidProducts(invalidProducts);
+      }
+      setOrderPlacedResponse(orders);
+      setIsOrderPalced(true);
+      toast.success(
+        "🎉 Thank you! Your order is confirmed.",
+        "You can see order detail on order page."
+      );
+    },
+    onError: (err: AxiosError<ErrorResponse>) => {
+      const errorMsg =
+        err.response?.data.message || "Something went wrong.Try it again!";
+      setPlaceOrderError(errorMsg);
+      toast.error(
+        "We're sorry, your order could not be processed.",
+        "Don’t worry — you haven’t been charged. Try again or reach out to us for help"
+      );
+    },
+  });
+
+  const handlePlaceOrder = () => {
+    // cartVaildProducts
+    /*
+    setValidProducts
+    setInvalidProducts
+    */
+    const placeOrderProduct: { productId: string; quantity: number }[] = [];
+    validProducts.map((item) => {
+      const id = item.product._id;
+      const quantity = item.quantity;
+      placeOrderProduct.push({ productId: id, quantity });
+    });
+    // placeOrderMutation.mutate(validProducts)
+    placeOrderMutation.mutate(placeOrderProduct);
+  };
+
   useEffect(() => {
     if (UserInfoData) {
       console.log("UserInfoData", UserInfoData);
@@ -427,328 +531,350 @@ export default function CheckOutPage() {
 
   return (
     <div className=" container">
-      <div className="flex flex-col lg:flex-row lg:justify-between">
-        {/* UserInfo */}
-        <div className="mt-8  lg:w-[40%]">
-          {isValidUserInfo ? (
-            <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
-              {/* show user info */}
-              <div className="border-b p-2 rounded-lg flex flex-col gap-2 pb-6">
-                <h2 className="text-xl font-medium mb-4 mt-2 ">
-                  Contact information
-                </h2>
-                <div className="flex flex-col items-start gap-1">
-                  <span className="block font-medium text-left opacity-80">
-                    Email address
-                  </span>
-                  <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
-                    {userEmail}
-                  </span>
-                </div>
-                <div className="flex flex-col items-start gap-1">
-                  <span className="block font-medium text-left opacity-80">
-                    Phone Number
-                  </span>
-                  <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
-                    {userPhoneNumber}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-4 mt-6">
-                <h2 className="text-xl font-medium mb-4 mt-2 ">
-                  Shipping information
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="block font-medium text-left opacity-80">
-                      Name
-                    </span>
-                    <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
-                      {userName}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="block font-medium text-left opacity-80">
-                      Address
-                    </span>
-                    <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
-                      {userAddress}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="block font-medium text-left opacity-80">
-                      Postal code
-                    </span>
-                    <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
-                      {userPincode}
-                    </div>
-                    <Button
-                      className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4"
-                      onClick={() => setIsValidUserInfo(false)}
-                    >
-                      Update{" "}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <h2 className="text-2xl font-medium mt-4">
-                Shipping information
-              </h2>
-              <div className="mx-auto  text-center">
-                {addressMutation.isError && (
-                  <span className=" mb-1 text-sm text-red-500 text-center ">
-                    {updateAddressErrMsg}
-                  </span>
-                )}
-              </div>
-              {/* update form */}
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col justify-center  gap-2 p-4 mx-auto border rounded-md shadow mt-4"
-              >
-                <label className="flex flex-col items-start gap-1 ">
-                  <span className="block font-medium text-left opacity-80">
-                    Address
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                    {...register("address")}
-                    placeholder="Enter address"
-                  />
-                </label>
-                {errors.address && (
-                  <span className="text-sm font-medium text-red-600">
-                    {errors.address.message}
-                  </span>
-                )}
-                <label className="flex flex-col items-start gap-1">
-                  <span className="block font-medium text-left opacity-80">
-                    Postal code
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                    {...register("pinCode")}
-                    placeholder="Enter 6 digit pin code"
-                  />
-                </label>
-                {errors.pinCode && (
-                  <span className="text-sm font-medium text-red-600">
-                    {errors.pinCode.message}
-                  </span>
-                )}
-                <label className="flex flex-col items-start gap-1">
-                  <span className="block font-medium text-left opacity-80">
-                    phoneNumber
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
-                    {...register("phoneNumber")}
-                    placeholder="Enter 10 digit phone number"
-                  />
-                </label>
-                {errors.phoneNumber && (
-                  <span className="text-sm font-medium text-red-600">
-                    {errors.phoneNumber.message}
-                  </span>
-                )}
-                {/* <Button className="mt-4 mb-2 bg-indigo-500 hover:bg-indigo-600">Save</Button> */}
-                <button
-                  className={` bg-indigo-500 hover:bg-indigo-600 transition-colors text-stone-100 hover:text-stone-100 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${
-                    addressMutation.isPending
-                      ? "cursor-not-allowed opacity-45"
-                      : ""
-                  }`}
-                  type="submit"
-                  disabled={addressMutation.isPending}
-                >
-                  {addressMutation.isPending && (
-                    <span>
-                      <LoaderCircle
-                        strokeWidth={2}
-                        className="text-bg-cta animate-spin"
-                      />
-                    </span>
-                  )}
-                  Submit
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
-        {/* User cart info */}
-        <div className="lg:w-[58%]  p-2">
-          {validProducts.length > 0 && (
-            <div className="mt-6 flex flex-col  justify-between">
-              <h3 className="text-gray-900 font-medium text-2xl mb-2">
-                Order summary
-              </h3>
-              <ul
-                role="list"
-                className=" divide-y divide-gray-200 space-y-2 lg:w-full  p-2"
-              >
-                {validProducts.map((item, index) => (
-                  <li key={index}>
-                    <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                      <Image
-                        src={item.product.image}
-                        alt={item.product.title}
-                        width={50}
-                        height={50}
-                        priority
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <div className="ml-4 flex flex-1 flex-col">
-                      <div>
-                        <div className="flex justify-between text-base font-medium text-gray-900">
-                          <h3>
-                            <Link href={`/products/${item.product._id}`}>
-                              {item.product.title}
-                            </Link>
-                          </h3>
-                          <p className="ml-4">
-                            {" "}
-                            {formatPrice(
-                              item.product.price - item.product.salePrice,
-                              item.product.currency
-                            )}
-                          </p>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {item.product.brand}
-                        </p>
-                      </div>
-                      <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                        <p className="text-gray-500">Qty {item.quantity}</p>
+      {/* IsOrderPalced */}
+      <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 p-4">
+        {/* Image Section */}
+        <div className="lg:w-1/2 md:flex justify-center items-center mb-8 lg:mb-0 hidden">
 
-                        <div className="flex">
-                          <button
-                            type="button"
-                            className="font-medium text-indigo-600 hover:text-indigo-500"
-                            onClick={() =>
-                              handleRemoveProduct(item.product._id)
-                            }
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="lg:w-full mt-6 space-y-6">
-                {/* <h3 className="text-gray-900 font-medium text-xl">
-                  Order summary
-                </h3> */}
-                <div className="space-y-4 divide-y-2">
-                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                    <p className="">Total Items</p>
-                    <p>{totalQuantity}</p>
-                  </div>
-                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                    <p>Subtotal</p>
-                    <p>$ {totalPrice}</p>
-                  </div>
-                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                    <p>Shipping estimate</p>
-                    <p>$ 0</p>
-                  </div>
-                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                    <p>Tax estimate</p>
-                    <p>$ 0</p>
-                  </div>
-                  <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                    <p>Order total</p>
-                    <p>$ {totalPrice}</p>
-                  </div>
-
-                  <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
-                    <Link href={"/checkout"}>PlaceOrder</Link>
-                  </Button>
-                </div>
-                <p className="mt-2 text-md">
-                  <span className="font-bold">Note:</span> Order price is
-                  calculated on dollar currency{" "}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-      <div>
-        {/* inValid product */}
-        {invalidProducts.length > 0 && (
-          <div className="space-y-2 mt-6">
-            <h2 className="text-xl font-semibold text-rose-600">
-              Oops! Not Enough Items in Stock
-            </h2>
-            <div className="mt-16 flex flex-col lg:flex-row justify-between">
-              <ul
-                role="list"
-                className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
-              >
-                {invalidProducts.map((item, index) => (
-                  <li key={index}>
-                    <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                      <Image
-                        src={item.product.image}
-                        alt={item.product.title}
-                        width={50}
-                        height={50}
-                        priority
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <div className="ml-4 flex flex-1 flex-col">
-                      <div>
-                        <div className="flex justify-between text-base font-medium text-gray-900">
-                          <h3>
-                            <Link href={`/products/${item.product._id}`}>
-                              {item.product.title}
-                            </Link>
-                          </h3>
-                          <p className="ml-4">
-                            {" "}
-                            {formatPrice(
-                              item.product.price - item.product.salePrice,
-                              item.product.currency
-                            )}
-                          </p>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {item.product.brand}
-                          <span className="text-md capitalize text-red-500 font-medium ml-4 bg-red-100 p-1 rounded-lg px-2">
-                            {item.reason}
-                          </span>
-                        </p>
-                      </div>
-                      <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                        <p className="text-gray-500">Qty {item.quantity}</p>
+      {isOrderPalced ? (
+        <div>
 
-                        <div className="flex flex-col items-start">
-                          <button
-                            type="button"
-                            className="font-medium text-indigo-600 hover:text-indigo-500"
-                            onClick={() =>
-                              handleRemoveProduct(item.product._id)
-                            }
-                          >
-                            Remove
-                          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col lg:flex-row lg:justify-between">
+            {/* UserInfo */}
+            <div className="mt-8  lg:w-[40%]">
+              {isValidUserInfo ? (
+                <div className="border p-2 px-4 rounded-xl drop-shadow shadow ">
+                  {/* show user info */}
+                  <div className="border-b p-2 rounded-lg flex flex-col gap-2 pb-6">
+                    <h2 className="text-xl font-medium mb-4 mt-2 ">
+                      Contact information
+                    </h2>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="block font-medium text-left opacity-80">
+                        Email address
+                      </span>
+                      <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                        {userEmail}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="block font-medium text-left opacity-80">
+                        Phone Number
+                      </span>
+                      <span className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200/70">
+                        {userPhoneNumber}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-4 mt-6">
+                    <h2 className="text-xl font-medium mb-4 mt-2 ">
+                      Shipping information
+                    </h2>
+                    <div className="space-y-4">
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="block font-medium text-left opacity-80">
+                          Name
+                        </span>
+                        <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                          {userName}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="block font-medium text-left opacity-80">
+                          Address
+                        </span>
+                        <span className="w-full p-1 text-black rounded outline-none placeholder:text-stone-800 bg-stone-200/70 capitalize">
+                          {userAddress}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="block font-medium text-left opacity-80">
+                          Postal code
+                        </span>
+                        <div className="w-full  p-1 text-black rounded outline-none placeholder:text-stone-800  border  bg-stone-200/70">
+                          {userPincode}
                         </div>
+                        <Button
+                          className="mt-4 w-[20%] hover:bg-indigo-500 bg-indigo-600 mb-4"
+                          onClick={() => setIsValidUserInfo(false)}
+                        >
+                          Update{" "}
+                        </Button>
                       </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
-              {/* <div className="lg:w-[42%] mt-6 space-y-6">
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h2 className="text-2xl font-medium mt-4">
+                    Shipping information
+                  </h2>
+                  <div className="mx-auto  text-center">
+                    {addressMutation.isError && (
+                      <span className=" mb-1 text-sm text-red-500 text-center ">
+                        {updateAddressErrMsg}
+                      </span>
+                    )}
+                  </div>
+                  {/* update form */}
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="flex flex-col justify-center  gap-2 p-4 mx-auto border rounded-md shadow mt-4"
+                  >
+                    <label className="flex flex-col items-start gap-1 ">
+                      <span className="block font-medium text-left opacity-80">
+                        Address
+                      </span>
+                      <input
+                        type="text"
+                        className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                        {...register("address")}
+                        placeholder="Enter address"
+                      />
+                    </label>
+                    {errors.address && (
+                      <span className="text-sm font-medium text-red-600">
+                        {errors.address.message}
+                      </span>
+                    )}
+                    <label className="flex flex-col items-start gap-1">
+                      <span className="block font-medium text-left opacity-80">
+                        Postal code
+                      </span>
+                      <input
+                        type="text"
+                        className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                        {...register("pinCode")}
+                        placeholder="Enter 6 digit pin code"
+                      />
+                    </label>
+                    {errors.pinCode && (
+                      <span className="text-sm font-medium text-red-600">
+                        {errors.pinCode.message}
+                      </span>
+                    )}
+                    <label className="flex flex-col items-start gap-1">
+                      <span className="block font-medium text-left opacity-80">
+                        phoneNumber
+                      </span>
+                      <input
+                        type="text"
+                        className="w-full p-1 text-black border-none rounded outline-none placeholder:text-stone-800 bg-stone-200"
+                        {...register("phoneNumber")}
+                        placeholder="Enter 10 digit phone number"
+                      />
+                    </label>
+                    {errors.phoneNumber && (
+                      <span className="text-sm font-medium text-red-600">
+                        {errors.phoneNumber.message}
+                      </span>
+                    )}
+                    {/* <Button className="mt-4 mb-2 bg-indigo-500 hover:bg-indigo-600">Save</Button> */}
+                    <button
+                      className={` bg-indigo-500 hover:bg-indigo-600 transition-colors text-stone-100 hover:text-stone-100 font-semibold w-full py-2 rounded-md mt-6 mb-4 flex items-center justify-center gap-2 ${
+                        addressMutation.isPending
+                          ? "cursor-not-allowed opacity-45"
+                          : ""
+                      }`}
+                      type="submit"
+                      disabled={addressMutation.isPending}
+                    >
+                      {addressMutation.isPending && (
+                        <span>
+                          <LoaderCircle
+                            strokeWidth={2}
+                            className="text-bg-cta animate-spin"
+                          />
+                        </span>
+                      )}
+                      Submit
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+            {/* User cart info */}
+            <div className="lg:w-[58%]  p-2">
+              {validProducts.length > 0 && (
+                <div className="mt-6 flex flex-col  justify-between">
+                  <h3 className="text-gray-900 font-medium text-2xl mb-2">
+                    Order summary
+                  </h3>
+                  {placeOrderError && (
+                    <span className="text-md text-center font-medium text-rose-500">
+                      {placeOrderError}
+                    </span>
+                  )}
+                  <ul
+                    role="list"
+                    className=" divide-y divide-gray-200 space-y-2 lg:w-full  p-2"
+                  >
+                    {validProducts.map((item, index) => (
+                      <li key={index}>
+                        <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                          <Image
+                            src={item.product.image}
+                            alt={item.product.title}
+                            width={50}
+                            height={50}
+                            priority
+                            className="size-full object-contain"
+                          />
+                        </div>
+                        <div className="ml-4 flex flex-1 flex-col">
+                          <div>
+                            <div className="flex justify-between text-base font-medium text-gray-900">
+                              <h3>
+                                <Link href={`/products/${item.product._id}`}>
+                                  {item.product.title}
+                                </Link>
+                              </h3>
+                              <p className="ml-4">
+                                {" "}
+                                {formatPrice(
+                                  item.product.price - item.product.salePrice,
+                                  item.product.currency
+                                )}
+                              </p>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500">
+                              {item.product.brand}
+                            </p>
+                          </div>
+                          <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                            <p className="text-gray-500">Qty {item.quantity}</p>
+
+                            <div className="flex">
+                              <button
+                                type="button"
+                                className="font-medium text-indigo-600 hover:text-indigo-500"
+                                onClick={() =>
+                                  handleRemoveProduct(item.product._id)
+                                }
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="lg:w-full mt-6 space-y-6">
+                    {/* <h3 className="text-gray-900 font-medium text-xl">
+                  Order summary
+                </h3> */}
+                    <div className="space-y-4 divide-y-2">
+                      <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                        <p className="">Total Items</p>
+                        <p>{totalQuantity}</p>
+                      </div>
+                      <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                        <p>Subtotal</p>
+                        <p>$ {totalPrice}</p>
+                      </div>
+                      <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                        <p>Shipping estimate</p>
+                        <p>$ 0</p>
+                      </div>
+                      <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                        <p>Tax estimate</p>
+                        <p>$ 0</p>
+                      </div>
+                      <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                        <p>Order total</p>
+                        <p>$ {totalPrice}</p>
+                      </div>
+
+                      <Button
+                        className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md"
+                        onClick={handlePlaceOrder}
+                        disabled={placeOrderMutation.isPending}
+                      >
+                        PlaceOrder
+                      </Button>
+                    </div>
+                    <p className="mt-2 text-md">
+                      <span className="font-bold">Note:</span> Order price is
+                      calculated on dollar currency{" "}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div>
+            {/* inValid product */}
+            {invalidProducts.length > 0 && (
+              <div className="space-y-2 mt-6">
+                <h2 className="text-xl font-semibold text-rose-600">
+                  Oops! Not Enough Items in Stock
+                </h2>
+                <div className="mt-16 flex flex-col lg:flex-row justify-between">
+                  <ul
+                    role="list"
+                    className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+                  >
+                    {invalidProducts.map((item, index) => (
+                      <li key={index}>
+                        <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                          <Image
+                            src={item.product.image}
+                            alt={item.product.title}
+                            width={50}
+                            height={50}
+                            priority
+                            className="size-full object-contain"
+                          />
+                        </div>
+                        <div className="ml-4 flex flex-1 flex-col">
+                          <div>
+                            <div className="flex justify-between text-base font-medium text-gray-900">
+                              <h3>
+                                <Link href={`/products/${item.product._id}`}>
+                                  {item.product.title}
+                                </Link>
+                              </h3>
+                              <p className="ml-4">
+                                {" "}
+                                {formatPrice(
+                                  item.product.price - item.product.salePrice,
+                                  item.product.currency
+                                )}
+                              </p>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500">
+                              {item.product.brand}
+                              <span className="text-md capitalize text-red-500 font-medium ml-4 bg-red-100 p-1 rounded-lg px-2">
+                                {item.reason}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                            <p className="text-gray-500">Qty {item.quantity}</p>
+
+                            <div className="flex flex-col items-start">
+                              <button
+                                type="button"
+                                className="font-medium text-indigo-600 hover:text-indigo-500"
+                                onClick={() =>
+                                  handleRemoveProduct(item.product._id)
+                                }
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {/* <div className="lg:w-[42%] mt-6 space-y-6">
             <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
             <div className="space-y-4 divide-y-2">
               <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
@@ -781,10 +907,12 @@ export default function CheckOutPage() {
               on dollar currency{" "}
             </p>
           </div> */}
-            </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
