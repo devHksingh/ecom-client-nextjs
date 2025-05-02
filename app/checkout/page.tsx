@@ -18,13 +18,12 @@ import { addInfo } from "@/lib/store/features/user/userSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { CheckCircle, CreditCard, LoaderCircle, Truck } from "lucide-react";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import useToast from "@/hook/useToast";
-
 
 interface UserCartData {
   productId: string;
@@ -78,7 +77,6 @@ interface OrderProps {
   quantity: number;
   totalPrice: number;
 }
-
 
 const formSchema = z.object({
   address: z
@@ -336,6 +334,41 @@ export default function CheckOutPage() {
         setInvalidProducts(invalidProducts);
       }
       setOrderPlacedResponse(orders);
+      const grandTotal = orders.reduce((acc: number, order: OrderProps) => {
+        const productCurrency = order.productDetails.currency;
+        let currencyConvertMultiplier;
+        // converting into dolar
+        switch (productCurrency) {
+          case "INR":
+            currencyConvertMultiplier = 0.011;
+            break;
+          case "USD":
+            currencyConvertMultiplier = 1;
+            break;
+          case "EUR":
+            currencyConvertMultiplier = 1.19;
+            break;
+          case "GBP":
+            currencyConvertMultiplier = 1.29;
+            break;
+          case "RUB":
+            currencyConvertMultiplier = 0.011;
+            break;
+          default:
+            currencyConvertMultiplier = 1;
+            break;
+        }
+
+        acc += order.totalPrice * currencyConvertMultiplier;
+        return acc;
+      }, 0);
+      const totalItems = orders.reduce((acc: number, order: OrderProps) => {
+        const quantity = order.quantity;
+        acc += quantity;
+        return acc;
+      }, 0);
+      setTotalPrice(grandTotal);
+      setTotalQuantity(totalItems);
       setIsOrderPalced(true);
       toast.success(
         "🎉 Thank you! Your order is confirmed.",
@@ -532,16 +565,152 @@ export default function CheckOutPage() {
   return (
     <div className=" container">
       {/* IsOrderPalced */}
-      <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 p-4">
+      
+      {isOrderPalced ? (
+        <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 p-4">
         {/* Image Section */}
-        <div className="lg:w-1/2 md:flex justify-center items-center mb-8 lg:mb-0 hidden">
+        <div className="lg:w-[40%] md:flex justify-center items-center mb-8 lg:mb-0 hidden">
+          <Image
+            src="/order-confirmed.svg"
+            alt="Order Success"
+            width={400}
+            height={400}
+            className="object-contain"
+          />
+        </div>
+        {/* Order Summary Section */}
+        <div className="lg:w-full bg-white shadow-xl rounded-2xl p-6 w-full max-w-xl">
+          <div>
+            <div className="flex items-center gap-1 bg-green-100 rounded-2xl p-1 px-2  w-[26%] mb-2">
+              <CheckCircle className="text-green-600 w-4 h-4" />
+              <span className="text-green-600 font-medium">Order Placed</span>
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Thank You! Your Order Is Confirmed
+            </h2>
+            <p className="text-lg">
+              We appreciate your order, we’re currently processing it. So hang
+              tight and we’ll send you confirmation very soon!
+            </p>
+          </div>
+          <h3 className="text-lg font-medium text-gray-800 mt-6  border-b-2 pb-2">
+            Order Items
+          </h3>
+          {/* list of confirmed items OrderPlacedResponse */}
+          <div className="mt-4 space-y-4">
+            {orderPlacedResponse.map((item) => (
+              <div key={item.orderId} className="flex items-start space-x-4">
+                {/* product img */}
+                <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+                  <Image
+                    src={item.productDetails.image}
+                    alt={item.productDetails.title}
+                    className="w-full h-full object-cover"
+                    height={50}
+                    width={50}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {item.productDetails.title}
+                  </p>
+                  <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                  <p className="text-sm text-gray-500">
+                    Order status {item.orderStatus}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Order PlacedOn {item.orderPlaceOn}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-sm font-medium text-gray-900">
+                  {formatPrice(item.totalPrice, item.productDetails.currency)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="px-6 py-4  border-gray-200">
+            <div className="flex items-center space-x-2 mb-4">
+              <CreditCard className="w-5 h-5 text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-800">
+                Payment Details
+              </h3>
+            </div>
 
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Subtotal:</span>
+                <span className="text-gray-800">$ {totalPrice}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Tax:</span>
+                <span className="text-gray-800">$ 0</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Shipping:</span>
+                <span className="text-gray-800">$ 0</span>
+              </div>
+              <div className="pt-2 mt-2 border-t border-gray-200">
+                <div className="flex justify-between">
+                  <span className="text-base font-medium text-gray-900">
+                    Total:
+                  </span>
+                  <span className="text-base font-bold text-gray-900">
+                    $ {totalPrice}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* userDetails */}
+          <div className="px-6 py-4  border-gray-200">
+            <div className="flex items-center space-x-2 mb-4">
+              <Truck className="w-5 h-5 text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-800">
+                Shipping Info
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Name:</span>
+                <span className="text-gray-800 capitalize">{userName}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Email:</span>
+                <span className="text-gray-800">{userEmail}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Address:</span>
+                <span className="text-gray-800 capitalize truncate">
+                  {userAddress}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="px-6 py-4 border-gray-200">
+            <div className="flex items-center space-x-2 mb-4">
+              <CreditCard className="w-5 h-5 text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-800">
+                Payment Type
+              </h3>
+              <span className="font-medium text-indigo-600">
+                : COD (Cash on Delivery)
+              </span>
+            </div>
+          </div>
+          <p className="mt-1 mb-4 text-md">
+            <span className="font-bold">Note:</span> Order price is calculated
+            on dollar currency{" "}
+          </p>
+          {/* Action Buttons */}
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+            <button className="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <Link href={`/orders`}>Track Order</Link>
+            </button>
+          </div>
         </div>
       </div>
-      {isOrderPalced ? (
-        <div>
-
-        </div>
       ) : (
         <>
           <div className="flex flex-col lg:flex-row lg:justify-between">
@@ -874,39 +1043,6 @@ export default function CheckOutPage() {
                       </li>
                     ))}
                   </ul>
-                  {/* <div className="lg:w-[42%] mt-6 space-y-6">
-            <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
-            <div className="space-y-4 divide-y-2">
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p className="">Total Items</p>
-                <p>{totalQuantity}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Subtotal</p>
-                <p>$ {totalPrice}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Shipping estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Tax estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Order total</p>
-                <p>$ {totalPrice}</p>
-              </div>
-
-              <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500  text-md">
-                <Link href={'/checkout'}>PlaceOrder</Link>
-              </Button>
-            </div>
-            <p className="mt-2 text-md">
-              <span className="font-bold">Note:</span> Order price is calculated
-              on dollar currency{" "}
-            </p>
-          </div> */}
                 </div>
               </div>
             )}
