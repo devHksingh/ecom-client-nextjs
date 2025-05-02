@@ -627,6 +627,31 @@ export default function CheckOutPage() {
                 </div>
               </div>
             ))}
+            {invalidProducts && 
+            (<>
+            {invalidProducts.map((item,index)=>(<div key={index} className="flex items-start space-x-4">
+                {/* product img */}
+                <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+                  <Image
+                    src={item.product.image}
+                    alt={item.product.title}
+                    className="w-full h-full object-cover"
+                    height={50}
+                    width={50}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {item.product.title}
+                  </p>
+                  <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                  
+                </div>
+                <div className="flex-shrink-0 text-sm font-medium text-red-600">
+                  {item.reason}
+                </div>
+              </div>))}
+            </>)}
           </div>
           <div className="px-6 py-4  border-gray-200">
             <div className="flex items-center space-x-2 mb-4">
