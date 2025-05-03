@@ -25,35 +25,20 @@ interface OrderProps {
   quantity: number;
 }
 interface ListOfOrdersProps {
-    orders: OrderProps[];
-  }
+  orders: OrderProps[];
+}
 
 const ListOfOrders = ({ orders }: ListOfOrdersProps) => {
-  const formatPrice = (amount: number, currency: string) => {
-    let formatedPrice: string;
-    switch (currency) {
-      case "USD":
-        formatedPrice = `${"$"} ${amount}`;
-        break;
-      case "EUR":
-        formatedPrice = `${"$"} ${amount}`;
-        break;
-      case "INR":
-        formatedPrice = `${"₹"} ${amount}`;
-        break;
-      case "RUB":
-        formatedPrice = `${"₽"} ${amount}`;
-        break;
-      case "GBP":
-        formatedPrice = `${"£"} ${amount}`;
-        break;
-      default:
-        formatedPrice = `${"₹"} ${amount}`;
-        break;
-    }
-    return formatedPrice;
+  const formateDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const formattedDate = date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    return formattedDate;
   };
-  
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
@@ -75,21 +60,23 @@ const ListOfOrders = ({ orders }: ListOfOrdersProps) => {
               />
               <div className="mt-4 flex justify-between">
                 <div>
-                  <h3 className="text-sm text-gray-700 truncate lg:w-[60%]">
-                    <Link href={`/products/${order.productDetail.productId}`} className=" ">
+                  <h3 className="text-sm text-gray-900 truncate lg:w-[60%] font-medium">
+                    <Link
+                      href={`/orders/${order._id}`}
+                      className=" "
+                    >
                       <span aria-hidden="true" className="absolute inset-0 " />
                       {order.productDetail.name}
                     </Link>
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 mb-2">
-                    {order.orderPlaceOn}
+                  <p className="mt-1 text-sm text-gray-600 mb-2 font-medium">
+                    {formateDate(order.orderPlaceOn)}
                   </p>
                   <ShowOrderInfo orderStatus={order.orderStatus} />
                 </div>
-                <p className="text-sm font-medium text-gray-900">Qty: {order.quantity}</p>
-                
-                
-                
+                <p className="text-sm font-medium text-gray-900">
+                  Qty: {order.quantity}
+                </p>
               </div>
             </div>
           ))}
