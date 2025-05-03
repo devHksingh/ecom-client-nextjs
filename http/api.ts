@@ -118,6 +118,11 @@ const clearCart = async()=>{
     return response
 }
 
+const getAllOrders = async()=>{
+    const response = await api.get('/api/v1/orders/getOrder')
+    return response
+}
+
 export {
     registerUser,
     login,
@@ -136,5 +141,6 @@ export {
     getUser,
     updateAddress,
     placeMultipleOrder,
-    clearCart
+    clearCart,
+    getAllOrders
 }
