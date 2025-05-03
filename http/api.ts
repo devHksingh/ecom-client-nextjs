@@ -113,6 +113,10 @@ const placeMultipleOrder = async(data:{productId: string, quantity: number}[])=>
     const response = await api.post('/api/v1/orders/placeMultipleOrder',data)
     return response
 }
+const clearCart = async()=>{
+    const response = await api.get('/api/v1/cart/clearCart')
+    return response
+}
 
 export {
     registerUser,
@@ -131,5 +135,6 @@ export {
     getStatusmultipleProduct,
     getUser,
     updateAddress,
-    placeMultipleOrder
+    placeMultipleOrder,
+    clearCart
 }
