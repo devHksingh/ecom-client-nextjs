@@ -19,7 +19,13 @@ import { addInfo } from "@/lib/store/features/user/userSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { CheckCircle, CreditCard, LoaderCircle, Truck } from "lucide-react";
+import {
+  CheckCircle,
+  CreditCard,
+  LoaderCircle,
+  Package,
+  Truck,
+} from "lucide-react";
 import { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -519,6 +525,16 @@ export default function CheckOutPage() {
     }
   }, [userAddress, userPincode]);
 
+  const formattedDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const formateDate = date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    return formateDate;
+  };
+
   if (placeOrderMutation.isPending) {
     return (
       <div className="fixed inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
@@ -612,7 +628,7 @@ export default function CheckOutPage() {
           {/* Order Summary Section */}
           <div className="lg:w-full bg-white shadow-xl rounded-2xl p-6 w-full max-w-xl">
             <div>
-              <div className="flex items-center gap-1 bg-green-100 rounded-2xl p-1 px-2  w-[26%] mb-2">
+              <div className="flex items-center gap-1 bg-green-100 rounded-2xl p-1 px-2 w-[50%] lg:w-[28%] mb-2">
                 <CheckCircle className="text-green-600 w-4 h-4" />
                 <span className="text-green-600 font-medium">Order Placed</span>
               </div>
@@ -648,11 +664,15 @@ export default function CheckOutPage() {
                     <p className="text-sm text-gray-500">
                       Qty: {item.quantity}
                     </p>
+                    <div className="text-sm text-gray-500 flex gap-2 items-center mb-1">
+                      <p> Status</p>
+                      <span className="flex items-center gap-2 p-1 px-2 lg:w-[30%] rounded-md bg-blue-100 text-blue-800 font-medium">
+                        <Package className="w-5 h-5 text-blue-500" />
+                        {item.orderStatus}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-500">
-                      Order status {item.orderStatus}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Order PlacedOn {item.orderPlaceOn}
+                       PlacedOn { formattedDate(item.orderPlaceOn)}
                     </p>
                   </div>
                   <div className="flex-shrink-0 text-sm font-medium text-gray-900">
@@ -754,16 +774,17 @@ export default function CheckOutPage() {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-gray-200">
-              <div className="flex items-center space-x-2 mb-4">
+            <div className="px-6 py-4 border-gray-200 lg:flex items-center justify-between">
+              <div className="flex items-center space-x-2 ">
                 <CreditCard className="w-5 h-5 text-gray-500" />
                 <h3 className="text-lg font-medium text-gray-800">
                   Payment Type
                 </h3>
-                <span className="font-medium text-indigo-600">
-                  : COD (Cash on Delivery)
-                </span>
+                
               </div>
+              <span className="font-medium text-indigo-600">
+                   COD (Cash on Delivery)
+                </span>
             </div>
             <p className="mt-1 mb-4 text-md">
               <span className="font-bold">Note:</span> Order price is calculated
