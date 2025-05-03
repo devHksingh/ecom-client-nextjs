@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  clearCart,
   getStatusmultipleProduct,
   getUser,
   placeMultipleOrder,
@@ -437,6 +438,13 @@ export default function CheckOutPage() {
       setUserState(storedUser);
     }
   }, [router]);
+
+  // query on clear cart when Order Palced successfully
+  useQuery({
+    queryKey: ["deleteCartItems"],
+    queryFn: clearCart,
+    enabled: isOrderPalced,
+  });
 
   // api call
   const mutation = useMutation({
