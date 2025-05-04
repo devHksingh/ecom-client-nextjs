@@ -62,7 +62,7 @@ const ListOfOrders = ({ orders }: ListOfOrdersProps) => {
                 <div>
                   <h3 className="text-sm text-gray-900 truncate lg:w-[60%] font-medium">
                     <Link
-                      href={`/orders/${order._id}`}
+                      href={`/orders/${order.trackingId}`}
                       className=" "
                     >
                       <span aria-hidden="true" className="absolute inset-0 " />
