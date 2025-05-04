@@ -8,19 +8,19 @@ interface OrderStatusProps {
 const ShowOrderInfo = ({ orderStatus }: OrderStatusProps) => {
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case "processing":
+      case "PROCESSED":
         return {
           icon: <Package className="w-5 h-5 text-blue-500" />,
           color: "bg-blue-100 text-blue-800",
           text: "Processing",
         };
-      case "shipped":
+      case "SHIPPED":
         return {
           icon: <Truck className="w-5 h-5 text-orange-500" />,
           color: "bg-orange-100 text-orange-800",
           text: "Shipped",
         };
-      case "delivered":
+      case "DELIVERED":
         return {
           icon: <CheckCircle className="w-5 h-5 text-green-500" />,
           color: "bg-green-100 text-green-800",
