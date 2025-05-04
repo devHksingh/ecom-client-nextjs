@@ -45,22 +45,22 @@ const CartPage = () => {
     let formatedPrice: string;
     switch (currency) {
       case "USD":
-        formatedPrice = `${"$"}${amount}`;
+        formatedPrice = `${"$"}${amount.toLocaleString("en-IN")}`;
         break;
       case "EUR":
-        formatedPrice = `${"$"}${amount}`;
+        formatedPrice = `${"$"}${amount.toLocaleString("en-IN")}`;
         break;
       case "INR":
-        formatedPrice = `${"₹"}${amount}`;
+        formatedPrice = `${"₹"}${amount.toLocaleString("en-IN")}`;
         break;
       case "RUB":
-        formatedPrice = `${"₽"}${amount}`;
+        formatedPrice = `${"₽"}${amount.toLocaleString("en-IN")}`;
         break;
       case "GBP":
-        formatedPrice = `${"£"}${amount}`;
+        formatedPrice = `${"£"}${amount.toLocaleString("en-IN")}`;
         break;
       default:
-        formatedPrice = `${"₹"}${amount}`;
+        formatedPrice = `${"₹"}${amount.toLocaleString("en-IN")}`;
         break;
     }
     return formatedPrice;
