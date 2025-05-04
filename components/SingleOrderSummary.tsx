@@ -45,9 +45,10 @@ const SingleOrderSummary = ({ order }: SingleOrderSummaryProps) => {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Order Details</h1>
       <p className="text-gray-600">
-        Tracking ID: <strong>{order.trackingId}</strong> • Placed on{" "}
-        {formateDate(order.orderPlaceOn)}
+        Tracking ID: <strong>{order.trackingId}</strong>  
       </p>
+      <p className="text-gray-600">Placed on {" "}
+      <span className="font-medium">{formateDate(order.orderPlaceOn)}</span></p>
       <div className="mt-10">
         <OrderProgressBar status={order.orderStatus} />
       </div>
@@ -68,19 +69,19 @@ const SingleOrderSummary = ({ order }: SingleOrderSummaryProps) => {
           </div>
           <h2 className="text-xl font-semibold">{order.productDetail.name}</h2>
           <p className="text-gray-600 mb-2">Quantity: {order.quantity}</p>
-          <p className="text-lg font-bold mb-2">
+          <p className="text-md font-bold mb-2">
             {formatPrice(order.productDetail.price,order.productDetail.currency)}
           </p>
 
-          <p className="text-sm text-gray-500">
+          <p className=" text-gray-600 font-medium text-xl">
             Total: {formatPrice(order.totalPrice,order.productDetail.currency)}
           </p>
 
           <div className="mt-6">
-            <h3 className="font-semibold">Customer</h3>
-            <p>{order.userDetails.userName}</p>
+            <h3 className="font-semibold">Customer details</h3>
+            <p className=" capitalize">Name: {order.userDetails.userName}</p>
             <p className="text-sm text-gray-500">
-              {order.userDetails.userEmail}
+              Email: {order.userDetails.userEmail}
             </p>
           </div>
         </div>
