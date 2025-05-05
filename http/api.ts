@@ -109,18 +109,25 @@ const updateAddress = async (data: { address: string, pinCode: string, phoneNumb
     return response
 }
 
-const placeMultipleOrder = async(data:{productId: string, quantity: number}[])=>{
-    const response = await api.post('/api/v1/orders/placeMultipleOrder',data)
+const placeMultipleOrder = async (data: { productId: string, quantity: number }[]) => {
+    const response = await api.post('/api/v1/orders/placeMultipleOrder', data)
     return response
 }
-const clearCart = async()=>{
+const clearCart = async () => {
     const response = await api.get('/api/v1/cart/clearCart')
     return response
 }
 
-const getAllOrders = async()=>{
+const getAllOrders = async () => {
     const response = await api.get('/api/v1/orders/getOrder')
     return response
+}
+const forcedLogout = async () => {
+    const userSessionData = JSON.parse(sessionStorage.getItem('user') || `{}`)
+    const userId = userSessionData.id
+    const data = { userId: userId }
+    const response = await api.post('/api/v1/users/forcedLogout', data);
+    return response;
 }
 
 export {
@@ -142,5 +149,6 @@ export {
     updateAddress,
     placeMultipleOrder,
     clearCart,
-    getAllOrders
+    getAllOrders,
+    forcedLogout
 }
