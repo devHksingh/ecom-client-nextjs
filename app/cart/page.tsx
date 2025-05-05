@@ -1,12 +1,12 @@
 "use client";
 
 import useToast from "@/hook/useToast";
-import { getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
+import { forcedLogout, getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { updateAccessToken } from "@/lib/store/features/user/authSlice";
+import { deleteUser, updateAccessToken } from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,9 @@ interface apiCartProducts {
   id: string;
   quantity: number;
 }
+interface ErrorResponse {
+  message: string;
+}
 
 const CartPage = () => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -31,7 +34,9 @@ const CartPage = () => {
   const [cartProducts, setCartProducts] = useState<CartItemsPostReqProps[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const [cartStateProducts, setCartStateProducts] = useState<apiCartProducts[]>([]);
+  const [cartStateProducts, setCartStateProducts] = useState<apiCartProducts[]>(
+    []
+  );
   const [needSync, setNeedSync] = useState(false);
   // const hasMounted = useRef(false);
   const queryClient = useQueryClient();
@@ -39,7 +44,7 @@ const CartPage = () => {
   const userState = useAppSelector((state) => state.auth);
   const cartState = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
-  
+
   const { isLogin } = userState;
   const formatPrice = (amount: number, currency: string) => {
     let formatedPrice: string;
@@ -83,7 +88,7 @@ const CartPage = () => {
     }
   }, [authChecked, isLogin, router, toast]);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["cartProducts"],
     queryFn: getCart,
 
@@ -145,18 +150,18 @@ const CartPage = () => {
           sessionStorage.removeItem("user");
           sessionStorage.setItem("user", JSON.stringify(updatedUserData));
         }
-        const cartLocalStorage:{productId:string,quantity:number}[] =[]
+        const cartLocalStorage: { productId: string; quantity: number }[] = [];
         const { items, totalAmount, totalItems } = cart;
         items.map((item: CartItemsPostReqProps) => {
           const product = item.product;
-          const productId = item.product._id
+          const productId = item.product._id;
           const quantity = item.quantity;
           cartProducts.push({ product, quantity });
-          cartLocalStorage.push({productId,quantity})
+          cartLocalStorage.push({ productId, quantity });
         });
-        console.log("items ------- ",cartProducts)
-        if(cartLocalStorage.length>0){
-          localStorage.setItem("cart",JSON.stringify(cartLocalStorage))
+        console.log("items ------- ", cartProducts);
+        if (cartLocalStorage.length > 0) {
+          localStorage.setItem("cart", JSON.stringify(cartLocalStorage));
         }
         setCartProducts(cartProducts);
         setTotalPrice(totalAmount);
@@ -239,6 +244,17 @@ const CartPage = () => {
   }, [cartState]);
   console.log("cartState", cartState);
 
+  // Invalid or expired refresh token
+  const logoutMutation = useMutation({
+    mutationKey: ["logoutUser"],
+    mutationFn: forcedLogout,
+    onSuccess: () => {
+      dispatch(deleteUser());
+      sessionStorage.removeItem("user");
+      router.replace('/')
+    },
+  });
+
   const mutation = useMutation({
     mutationFn: multilpeProductAddToCart,
     onSuccess: (response) => {
@@ -280,12 +296,12 @@ const CartPage = () => {
   });
   // useEffect(() => {
   //   if (cartStateProducts.length > 0 && isLogin) {
-      
+
   //       console.log("cartStateProducts.length", cartStateProducts.length);
   //       console.log("cartStateProducts.length", cartStateProducts);
 
   //       mutation.mutate(cartStateProducts);
-      
+
   //   }
   // }, [cartStateProducts, isLogin]);
 
@@ -327,38 +343,46 @@ const CartPage = () => {
   const handleRemoveProduct = (productId: string) => {
     productRemoveMutation.mutate({ productId });
     // remove product form local storage {loginUserCart,logoutUserCart,cart}
-    const loginUserCart = JSON.parse(localStorage.getItem("loginUserCart") || "[]") as { id: string; quantity: number }[];
-    const logoutUserCart = JSON.parse(localStorage.getItem("logoutUserCart") || "[]") as { id: string; quantity: number }[];
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as { id: string; quantity: number }[];
-    if(loginUserCart.length>0){
-      const updatedCart = loginUserCart.filter((item)=> item.id !==productId)
-      localStorage.setItem("loginUserCart",JSON.stringify(updatedCart))
+    const loginUserCart = JSON.parse(
+      localStorage.getItem("loginUserCart") || "[]"
+    ) as { id: string; quantity: number }[];
+    const logoutUserCart = JSON.parse(
+      localStorage.getItem("logoutUserCart") || "[]"
+    ) as { id: string; quantity: number }[];
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as {
+      id: string;
+      quantity: number;
+    }[];
+    if (loginUserCart.length > 0) {
+      const updatedCart = loginUserCart.filter((item) => item.id !== productId);
+      localStorage.setItem("loginUserCart", JSON.stringify(updatedCart));
     }
-    if(logoutUserCart.length>0){
-      const updatedCart = logoutUserCart.filter((item)=> item.id !==productId)
-      localStorage.setItem("logoutUserCart",JSON.stringify(updatedCart))
+    if (logoutUserCart.length > 0) {
+      const updatedCart = logoutUserCart.filter(
+        (item) => item.id !== productId
+      );
+      localStorage.setItem("logoutUserCart", JSON.stringify(updatedCart));
     }
-    if(cart.length>0){
-      const updatedCart = cart.filter((item)=> item.id !==productId)
-      localStorage.setItem("cart",JSON.stringify(updatedCart))
+    if (cart.length > 0) {
+      const updatedCart = cart.filter((item) => item.id !== productId);
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
     }
   };
   // const handleRemoveProduct = (productId: string) => {
   //   productRemoveMutation.mutate({ productId });
-  
+
   //   // Remove product from all possible localStorage keys
   //   const localStorageKeys = ["loginUserCart", "logoutUserCart", "cart"];
-  
+
   //   localStorageKeys.forEach((key) => {
   //     const storedCart = JSON.parse(localStorage.getItem(key) || "[]") as { id: string; quantity: number }[];
-  
+
   //     if (storedCart.length > 0) {
   //       const updatedCart = storedCart.filter((item) => item.id !== productId);
   //       localStorage.setItem(key, JSON.stringify(updatedCart));
   //     }
   //   });
   // };
-  
 
   if (isLoading) {
     // toast.info("Fetching cart data", "Please wait we fecthig cart data ");
@@ -376,14 +400,19 @@ const CartPage = () => {
     );
   }
   if (isError) {
-    // toast.error(
-    //   "Failed to fetch cart data",
-    //   "Something went wrong. Failed to fetch cart data."
-    // );
+    
+    const axiosError = error as AxiosError<ErrorResponse>;
+    const errorMessage =
+      axiosError.response?.data?.message ||
+      "Something went wrong. Failed to fetch cart data. Please try again later.Or refresh the page";
+    if (axiosError.status === 401) {
+      
+      logoutMutation.mutate();
+    }
     return (
       <div className=" container">
         <div className="flex justify-center items-center h-full text-red-500 text-lg">
-          Something went wrong. Failed to fetch cart data.
+          {errorMessage}
         </div>
       </div>
     );
@@ -468,7 +497,7 @@ const CartPage = () => {
               </div>
 
               <Button className="w-full mt-4 bg-indigo-500 hover:bg-indigo-600  text-md">
-                <Link href={'/checkout'}>CheckOut</Link>
+                <Link href={"/checkout"}>CheckOut</Link>
               </Button>
             </div>
             <p className="mt-2 text-md">
