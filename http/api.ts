@@ -122,6 +122,10 @@ const getAllOrders = async () => {
     const response = await api.get('/api/v1/orders/getOrder')
     return response
 }
+const getWishlist = async () => {
+    const response = await api.get('/api/v1/wishList/getWishlist')
+    return response
+}
 const forcedLogout = async () => {
     const userSessionData = JSON.parse(sessionStorage.getItem('user') || `{}`)
     const userId = userSessionData.id
@@ -150,5 +154,6 @@ export {
     placeMultipleOrder,
     clearCart,
     getAllOrders,
-    forcedLogout
+    forcedLogout,
+    getWishlist
 }
