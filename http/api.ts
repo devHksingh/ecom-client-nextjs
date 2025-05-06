@@ -134,6 +134,11 @@ const forcedLogout = async () => {
     return response;
 }
 
+const multipleProductAddToWishList = async (data: [{ id: string }]) => {
+    const response = await api.post('/api/v1/wishList/multipleProductAddToWishList', data);
+    return response;
+}
+
 export {
     registerUser,
     login,
@@ -155,5 +160,6 @@ export {
     clearCart,
     getAllOrders,
     forcedLogout,
-    getWishlist
+    getWishlist,
+    multipleProductAddToWishList
 }
