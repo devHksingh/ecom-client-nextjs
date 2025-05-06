@@ -15,6 +15,7 @@ import { ProductProps } from "@/types/product";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -165,6 +166,30 @@ const WishlistPage = () => {
 
   return (
     <div className="container">
+      <div aria-label="Breadcrumb" className="mt-16">
+        <ol
+          role="list"
+          className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
+        >
+          <li>
+            <Link
+              href={"/"}
+              className="font-medium text-stone-800 hover:cursor-pointer"
+            >
+              Home
+            </Link>
+          </li>
+          <li className="text-stone-400">\</li>
+          <li>
+            <Link
+              href={`/wishList`}
+              className="font-medium capitalize text-stone-600 hover:cursor-pointer"
+            >
+              wishList
+            </Link>
+          </li>
+        </ol>
+      </div>
       {data && (
         <div className=" container">
           {wishListData.length > 0 && (

@@ -426,6 +426,30 @@ const CartPage = () => {
 
   return (
     <div className=" container">
+      <div aria-label="Breadcrumb" className="mt-16">
+              <ol
+                role="list"
+                className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
+              >
+                <li>
+                  <Link
+                    href={"/"}
+                    className="font-medium text-stone-800 hover:cursor-pointer"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li className="text-stone-400">\</li>
+                <li>
+                  <Link
+                    href={`/cart`}
+                    className="font-medium capitalize text-stone-600 hover:cursor-pointer"
+                  >
+                    Cart
+                  </Link>
+                </li>
+              </ol>
+            </div>
       {cartProducts.length > 0 && (
         <div className="mt-16 flex flex-col lg:flex-row justify-between">
           <ul
