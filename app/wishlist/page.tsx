@@ -1,6 +1,8 @@
 "use client";
 
-import ListOfProduct from "@/components/ListOfProduct";
+
+
+import ListWishlistProduct from "@/components/ListWishlistProduct";
 import { forcedLogout, getWishlist } from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -14,15 +16,7 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// interface WishlistDataProps {
-//   image: string;
-//   price: number;
-//   salePrice: number;
-//   totalStock: number;
-//   title: string;
-//   _id: string;
-//   currency: string;
-// }
+
 interface ErrorResponse {
   message: string;
 }
@@ -31,7 +25,7 @@ const WishlistPage = () => {
   const [wishListData, setWishListData] = useState<ProductProps[] | []>([]);
   const [isUserLogin, setIsUserLogin] = useState(false);
   const router = useRouter();
-  const cartReduxState = useAppSelector((state) => state.wishList);
+  const wishListReduxState = useAppSelector((state) => state.wishList);
   const userReduxState = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   //   redirect user if not login
@@ -86,6 +80,7 @@ const WishlistPage = () => {
       setWishListData(products);
     }
   }, [data]);
+
   if (isLoading) {
     // toast.info("Fetching cart data", "Please wait we fecthig cart data ");
     return (
@@ -121,7 +116,19 @@ const WishlistPage = () => {
   return (
     <div className="container">
       {data && (
-        <ListOfProduct products={wishListData} headTtitle={"wishlist"} />
+        <div className=" container">
+        {wishListData.length > 0 && (
+          <ListWishlistProduct products={wishListData}/>
+        )}
+  
+        {wishListReduxState.length === 0 && wishListData.length === 0 && (
+          <div className="mt-16">
+            <div className="text-center text-2xl text-red-500">
+              No Product in wishList
+            </div>
+          </div>
+        )}
+      </div>
       )}
     </div>
   );
