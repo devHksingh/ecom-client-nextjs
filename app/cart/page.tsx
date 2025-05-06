@@ -1,9 +1,17 @@
 "use client";
 
 import useToast from "@/hook/useToast";
-import { forcedLogout, getCart, multilpeProductAddToCart, removeFromCart } from "@/http/api";
+import {
+  forcedLogout,
+  getCart,
+  multilpeProductAddToCart,
+  removeFromCart,
+} from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { deleteUser, updateAccessToken } from "@/lib/store/features/user/authSlice";
+import {
+  deleteUser,
+  updateAccessToken,
+} from "@/lib/store/features/user/authSlice";
 import { ProductProps } from "@/types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -251,7 +259,7 @@ const CartPage = () => {
     onSuccess: () => {
       dispatch(deleteUser());
       sessionStorage.removeItem("user");
-      router.replace('/')
+      router.replace("/");
     },
   });
 
@@ -400,13 +408,11 @@ const CartPage = () => {
     );
   }
   if (isError) {
-    
     const axiosError = error as AxiosError<ErrorResponse>;
     const errorMessage =
       axiosError.response?.data?.message ||
       "Something went wrong. Failed to fetch cart data. Please try again later.Or refresh the page";
     if (axiosError.status === 401) {
-      
       logoutMutation.mutate();
     }
     return (

@@ -1,9 +1,11 @@
 "use client";
 
-
-
 import ListWishlistProduct from "@/components/ListWishlistProduct";
-import { forcedLogout, getWishlist } from "@/http/api";
+import {
+  forcedLogout,
+  getWishlist,
+  multipleProductAddToWishList,
+} from "@/http/api";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   deleteUser,
@@ -16,17 +18,26 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-
 interface ErrorResponse {
   message: string;
 }
+// interface LogoutUserWishlistProps {
+//   id: string;
+// }
 
 const WishlistPage = () => {
   const [wishListData, setWishListData] = useState<ProductProps[] | []>([]);
+  /**
+   * check if logoutUserWishlist have id and if login hit api to add multiple product to wishlist
+   */
+
   const [isUserLogin, setIsUserLogin] = useState(false);
+  //   const [logoutWishlistProduct, setlogoutWishlistProduct] = useState<
+  //     LogoutUserWishlistProps[] | []
+  //   >([]);
   const router = useRouter();
   const wishListReduxState = useAppSelector((state) => state.wishList);
-  const userReduxState = useAppSelector((state) => state.auth);
+  //   const userReduxState = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   //   redirect user if not login
 
@@ -46,6 +57,35 @@ const WishlistPage = () => {
     enabled: isUserLogin,
   });
 
+  //   logoutUserWishlist
+
+  const addWishListMutation = useMutation({
+    mutationKey: ["addLogoutWishListProduct"],
+    mutationFn: multipleProductAddToWishList,
+    onSuccess: (response) => {
+      console.log("addWishListMutation", response.data);
+      const { wishlist, isAccessTokenExp } = response.data;
+      if (isAccessTokenExp) {
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+      const { products } = wishlist;
+      setWishListData(products);
+      localStorage.removeItem("logoutUserWishlist");
+    },
+  });
+
   // Invalid or expired refresh token
   const logoutMutation = useMutation({
     mutationKey: ["logoutUser"],
@@ -56,6 +96,16 @@ const WishlistPage = () => {
       router.replace("/");
     },
   });
+
+  useEffect(() => {
+    const logoutWishlist = JSON.parse(
+      localStorage.getItem("logoutUserWishlist") || "[]"
+    );
+    if (logoutWishlist.length > 0) {
+      //   setlogoutWishlistProduct(logoutWishlist);
+      addWishListMutation.mutate(logoutWishlist);
+    }
+  }, []);
 
   useEffect(() => {
     if (data) {
@@ -117,18 +167,18 @@ const WishlistPage = () => {
     <div className="container">
       {data && (
         <div className=" container">
-        {wishListData.length > 0 && (
-          <ListWishlistProduct products={wishListData}/>
-        )}
-  
-        {wishListReduxState.length === 0 && wishListData.length === 0 && (
-          <div className="mt-16">
-            <div className="text-center text-2xl text-red-500">
-              No Product in wishList
+          {wishListData.length > 0 && (
+            <ListWishlistProduct products={wishListData} />
+          )}
+
+          {wishListReduxState.length === 0 && wishListData.length === 0 && (
+            <div className="mt-16">
+              <div className="text-center text-2xl text-red-500">
+                No Product in wishList
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       )}
     </div>
   );
