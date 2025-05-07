@@ -4,6 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import useToast from "@/hook/useToast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { removeWishlist } from "@/http/api";
+import { useAppDispatch } from "@/lib/hooks";
+import { updateAccessToken } from "@/lib/store/features/user/authSlice";
 
 interface product {
   products: ProductProps[];
@@ -11,6 +16,58 @@ interface product {
 
 const ListWishlistProduct = ({ products }: product) => {
   const router = useRouter();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const removeWishlistMutation = useMutation({
+    mutationFn: removeWishlist,
+    onSuccess: async (response) => {
+      // invalidate query
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      // refetch query
+      await queryClient.refetchQueries({
+        queryKey: ["wishlist"],
+        exact: true,
+      });
+      console.log("response.data removeWishlist", response.data);
+
+      const { isAccessTokenExp } = response.data;
+      if (isAccessTokenExp) {
+        //  token in localStorge and redux state
+        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+        const { accessToken: newAccessToken } = response.data;
+        dispatch(updateAccessToken({ accessToken: newAccessToken }));
+        const { email, id, name, refreshToken } = user;
+        const updatedUserData = {
+          accessToken: newAccessToken,
+          email,
+          id,
+          name,
+          refreshToken,
+        };
+        sessionStorage.removeItem("user");
+        sessionStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+    },
+    onError: () => {
+      toast.error(
+        "Request Falied",
+        "Failed to remove product on wishlist .Kindly retry!",
+        6000
+      );
+    },
+  });
+  const handleDeleteProduct = (productId: string, title: string) => {
+    removeWishlistMutation.mutate({ productId });
+    removeToWishlistToast(title);
+  };
+  const removeToWishlistToast = (productName: string) => {
+    toast.error(
+      `${productName} No longer on your wishlist.`,
+      "Removed 💔 Want it back? Just add it again.",
+      5000
+    );
+  };
   const formatPrice = (amount: number, currency: string) => {
     let formatedPrice: string;
     switch (currency) {
@@ -36,53 +93,6 @@ const ListWishlistProduct = ({ products }: product) => {
     return formatedPrice;
   };
   return (
-    // <section className="py-24">
-    //   <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-    //     <h2 className="font-manrope font-bold text-3xl min-[400px]:text-4xl text-black mb-8 max-lg:text-center">
-    //       Saved for Later
-    //     </h2>
-    //     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    //       {products.map((product) => (
-    //         <div key={product._id} className="max-w-[40rem] mx-auto">
-    //           <div className="w-full max-w-sm aspect-square">
-    //             <Image
-    //               src={product.image}
-    //               alt={product.title}
-    //               width={150}
-    //               height={150}
-    //               className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80 hover:cursor-pointer  "
-    //               onClick={() => {
-    //                 router.push(`/products/${product._id}`);
-    //               }}
-    //             />
-    //           </div>
-    //           <div className="mt-5 flex items-center justify-between">
-    //             <div className="">
-    //               <h6 className="font-medium text-lg  text-black mb-2 truncate cursor-pointer">
-    //                 <Link href={`/products/${product._id}`}>
-    //                   {product.title}
-    //                 </Link>
-    //               </h6>
-    //               <h6 className="font-semibold text-xl  text-indigo-600">
-    //                 {formatPrice(
-    //                   product.price - product.salePrice,
-    //                   product.currency
-    //                 )}
-    //               </h6>
-    //             </div>
-
-    // <Button
-    //   variant={"ghost"}
-    //   className=" cursor-pointer bg-red-100 text-red-600 self-center hover:bg-red-50  hover:text-rose-500"
-    // >
-    //   <Trash2 />
-    // </Button>
-    //           </div>
-    //         </div>
-    //       ))}
-    //     </div>
-    //   </div>
-    // </section>
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">
@@ -108,7 +118,6 @@ const ListWishlistProduct = ({ products }: product) => {
               <div className="mt-4 flex justify-between">
                 <div>
                   <h3 className="text-sm text-gray-700 ">
-                  
                     <Link href={`/products/${product._id}`}>
                       {product.title}
                     </Link>
@@ -126,6 +135,9 @@ const ListWishlistProduct = ({ products }: product) => {
                     variant={"ghost"}
                     className=" cursor-pointer bg-red-100 text-red-600 self-center hover:bg-red-50  hover:text-rose-500"
                     // TODO: add handle delete product
+                    onClick={() =>
+                      handleDeleteProduct(product._id, product.title)
+                    }
                   >
                     <Trash2 />
                   </Button>
