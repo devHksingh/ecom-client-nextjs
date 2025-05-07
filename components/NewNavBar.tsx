@@ -11,20 +11,46 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useMutation } from "@tanstack/react-query";
+import { logoutUser } from "@/http/api";
+import { deleteUser } from "@/lib/store/features/user/authSlice";
 
 const NewNavBar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+//   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [isClothNavOpen, setIsClothNavOpen] = useState(false);
   const [isElectronicsNavOpen, setIsElectronicsNavOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
+  useAuth();
+  const dispatch = useAppDispatch()
+  const userState = useAppSelector((state) => state.auth);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  useAuth();
+  const { isLogin } = userState;
+  // Delaying  until login status is determined
+  useEffect(() => {
+    if (typeof isLogin === "boolean") {
+      setAuthChecked(true);
+    }
+  }, [isLogin]);
+  const mutation = useMutation({
+    mutationFn: logoutUser,
+    onError: () => {},
+    onSuccess: () => {
+      dispatch(deleteUser());
+      sessionStorage.clear();
+    },
+    // TODO: Toast call logout and  provide all Link
+  });
+  const handleLogout = () => {
+    mutation.mutate();
+  };
   const clothing = [
     { name: "Men", href: "#", icon: Shirt },
     {
@@ -83,7 +109,7 @@ const NewNavBar = () => {
         {/* mobile menu */}
         {mobileMenuOpen && (
           <>
-            <div className="fixed inset-0 top-20  z-100 border border-red-800 bg-white">
+            <div className="fixed inset-0 top-20  z-100  bg-white">
               <div className="divide-y divide-gray-500/10 border">
                 <div className="space-y-2 py-6">
                   <button
@@ -145,23 +171,41 @@ const NewNavBar = () => {
                       ))}
                     </div>
                   )}
-                  <button className="group bg-red-100 flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
+                  <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
                     <Link href={"/login"}>About</Link>
                   </button>
-                  <button className="group bg-red-100 flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
+                  <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
                     <Link href={"/login"}>Contact</Link>
                   </button>
-                  <button className="group bg-red-100 flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
-                    <Link href={"/login"}>Cart</Link>
-                  </button>
-                  <button className="group bg-red-100 flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
-                    <Link href={"/login"}>Wishlist</Link>
-                  </button>
+                  {isLogin && (
+                    <>
+                      <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
+                        <Link href={"/login"}>Cart</Link>
+                      </button>
+                      <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
+                        <Link href={"/login"}>Wishlist</Link>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
-              <button className=" block bg-amber-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                <Link href={"/login"}>Login</Link>
-              </button>
+              {isLogin ? (
+                <>
+                  <button 
+                  className=" block bg-red-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                  onClick={handleLogout}
+                  >
+
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className=" block bg-amber-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
+                    <Link href={"/login"}>Login</Link>
+                  </button>
+                </>
+              )}
             </div>
           </>
         )}
