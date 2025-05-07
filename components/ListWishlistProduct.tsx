@@ -23,12 +23,12 @@ const ListWishlistProduct = ({ products }: product) => {
     mutationFn: removeWishlist,
     onSuccess: async (response) => {
       // invalidate query
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      await queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       // refetch query
-      await queryClient.refetchQueries({
-        queryKey: ["wishlist"],
-        exact: true,
-      });
+      // await queryClient.refetchQueries({
+      //   queryKey: ["wishlist"],
+      //   exact: true,
+      // });
       console.log("response.data removeWishlist", response.data);
 
       const { isAccessTokenExp } = response.data;
