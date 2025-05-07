@@ -3,6 +3,7 @@ import useAuth from "@/hook/useAuth";
 import {
   ChevronDown,
   Laptop,
+  LogOut,
   Menu,
   MonitorSmartphone,
   Shirt,
@@ -192,17 +193,17 @@ const NewNavBar = () => {
               {isLogin ? (
                 <>
                   <button 
-                  className=" block bg-red-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                  className="  flex items-center gap-2 bg-red-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                   onClick={handleLogout}
                   >
 
-                    Logout
+                    Logout <LogOut />
                   </button>
                 </>
               ) : (
                 <>
                   <button className=" block bg-amber-100 w-full text-start mt-2 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                    <Link href={"/login"}>Login</Link>
+                    <Link href={"/login"}>Login <span aria-hidden="true">&rarr;</span></Link>
                   </button>
                 </>
               )}
