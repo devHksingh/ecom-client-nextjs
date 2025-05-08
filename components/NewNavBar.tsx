@@ -309,14 +309,14 @@ const NewNavBar = () => {
               {isClothNavOpen && (
                 <>
                   <div
-                    className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[56%]"
+                    className=" flex  bg-stone-100 fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[56%]"
                     ref={clothingRef}
                   >
                     <div className=" w-full">
                       {lgNavClothing.map((item, index) => (
                         <div key={index}>
                           <Link href={item.href}>
-                            <div className="flex  hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
+                            <div className="flex  hover:bg-gray-200 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <Image
                                 src={item.imgSrc}
                                 alt={item.title}
@@ -351,14 +351,14 @@ const NewNavBar = () => {
               {isElectronicsNavOpen && (
                 <>
                   <div
-                    className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[64%]"
+                    className=" flex  bg-stone-100 fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[64%]"
                     ref={electronicsRef}
                   >
                     <div className=" w-full">
                       {lgNavElectronics.map((item, index) => (
                         <div key={index}>
                           <Link href={item.href}>
-                            <div className="flex  hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
+                            <div className="flex  hover:bg-gray-200 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <Image
                                 src={item.imgSrc}
                                 alt={item.title}
