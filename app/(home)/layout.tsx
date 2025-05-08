@@ -8,7 +8,8 @@ import {
 import "../globals.css";
 // import StoreProvider from "./StoreProvider";
 // import QueryProvider from "./QueryProvider";
-import NavBar from "@/components/NavBar";
+// import NavBar from "@/components/NavBar";
+import NewNavBar from "@/components/NewNavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,7 +51,8 @@ export default function RootLayout({
     >
       {/* <StoreProvider > */}
       {/* <QueryProvider> */}
-      <NavBar />
+      {/* <NavBar /> */}
+      <NewNavBar/>
       {children}
       {/* </QueryProvider> */}
       {/* </StoreProvider> */}

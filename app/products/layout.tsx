@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  // Black_Han_Sans,
-  Montserrat,
-} from "next/font/google";
+import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "../globals.css";
-// import StoreProvider from "./StoreProvider";
-// import QueryProvider from "./QueryProvider";
-import NavBar from "@/components/NavBar";
+import NewNavBar from "@/components/NewNavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,13 +12,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-// const blackHanSans = Black_Han_Sans({
-//   weight: ["400"],
-//   variable: "--font-black-han-sans",
-//   subsets: ["latin"],
-//   display: "swap",
-// });
-// ${blackHanSans.variable}
+
 const montserrat = Montserrat({
   weight: ["400", "500", "100", "200", "600", "700", "800"],
   variable: "--font-black-han-sans",
@@ -44,17 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // <html lang="en">
     <section
       className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  antialiased bg-white`}
     >
-      {/* <StoreProvider > */}
-      {/* <QueryProvider> */}
-      <NavBar />
+      <NewNavBar />
       {children}
-      {/* </QueryProvider> */}
-      {/* </StoreProvider> */}
     </section>
-    // </html>
   );
 }
