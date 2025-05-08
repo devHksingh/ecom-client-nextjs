@@ -6,7 +6,6 @@ import {
   LogOut,
   Menu,
   MonitorSmartphone,
-  Search,
   Shirt,
   Store,
   TabletSmartphone,
@@ -22,20 +21,52 @@ import { logoutUser } from "@/http/api";
 import { deleteUser } from "@/lib/store/features/user/authSlice";
 
 const NewNavBar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  const [, setAuthChecked] = useState(false);
+  // const [isOpen, setIsOpen] = useState(false);
   //   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [isClothNavOpen, setIsClothNavOpen] = useState(false);
   const [isElectronicsNavOpen, setIsElectronicsNavOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const clothingRef = useRef<HTMLDivElement | null>(null);
+  const electronicsRef = useRef<HTMLDivElement | null>(null);
+
   useAuth();
   const dispatch = useAppDispatch();
   const userState = useAppSelector((state) => state.auth);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  // const openModal = () => setIsModalOpen(true);
+  // const closeModal = () => setIsModalOpen(false);
   const { isLogin } = userState;
+  // Handle click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        clothingRef.current &&
+        !clothingRef.current.contains(target) &&
+        electronicsRef.current &&
+        !electronicsRef.current.contains(target)
+      ) {
+        setIsClothNavOpen(false);
+        setIsElectronicsNavOpen(false);
+      }
+
+      if (clothingRef.current && !clothingRef.current.contains(target)) {
+        setIsClothNavOpen(false);
+      }
+
+      if (electronicsRef.current && !electronicsRef.current.contains(target)) {
+        setIsElectronicsNavOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Delaying  until login status is determined
   useEffect(() => {
     if (typeof isLogin === "boolean") {
@@ -277,7 +308,10 @@ const NewNavBar = () => {
               </div>
               {isClothNavOpen && (
                 <>
-                  <div className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[56%]">
+                  <div
+                    className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[56%]"
+                    ref={clothingRef}
+                  >
                     <div className=" w-full">
                       {lgNavClothing.map((item, index) => (
                         <div key={index}>
@@ -306,9 +340,7 @@ const NewNavBar = () => {
                   setIsClothNavOpen(false);
                 }}
               >
-                <button className=" capitalize">
-                  electronics
-                </button>
+                <button className=" capitalize">electronics</button>
                 <ChevronDown
                   aria-hidden="true"
                   className={`size-5 flex-none  ${
@@ -318,7 +350,10 @@ const NewNavBar = () => {
               </div>
               {isElectronicsNavOpen && (
                 <>
-                  <div className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[64%]">
+                  <div
+                    className=" flex  bg-white fixed inset-0 top-16  z-100  w-[28%] left-[30%] lg:bolck p-2 rounded-lg h-[64%]"
+                    ref={electronicsRef}
+                  >
                     <div className=" w-full">
                       {lgNavElectronics.map((item, index) => (
                         <div key={index}>
@@ -378,6 +413,7 @@ const NewNavBar = () => {
                   className="bg-red-50 hover:bg-red-100"
                   variant={"ghost"}
                   onClick={handleLogout}
+                  disabled={mutation.isPending}
                 >
                   Logout <LogOut aria-hidden="true" />
                 </Button>
