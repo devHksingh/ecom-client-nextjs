@@ -86,24 +86,24 @@ const NewNavBar = () => {
     mutation.mutate();
   };
   const clothing = [
-    { name: "Men", href: "/clothing/men", icon: Shirt },
+    { name: "Men", href: "/category/Men", icon: Shirt },
     {
       name: "Woman",
       description: "formal Woman clothing",
-      href: "/clothing/women",
+      href: "/category/Woman",
       icon: Shirt,
     },
   ];
   const lgNavClothing = [
     {
       name: "Men",
-      href: "/clothing/men",
+      href: "/category/Men",
       imgSrc: "/assets/Men_s_Casual_Shirt1-removebg-preview.webp",
       title: "Mens Casual Shirt.",
     },
     {
       name: "Woman",
-      href: "/clothing/women",
+      href: "/category/Woman",
       imgSrc: "/promo/webp7.webp",
       title: " Woman clothing.",
     },
@@ -111,29 +111,29 @@ const NewNavBar = () => {
   const lgNavElectronics = [
     {
       name: "Phone",
-      href: "/electronics/phones",
+      href: "/category/Phone",
       imgSrc: "/assets/iPhone_16_Pro-removebg-preview.webp",
       title: "iPhone 16.",
     },
     {
       name: "Laptop",
-      href: "/electronics/laptops",
+      href: "/category/Laptop",
       imgSrc: "/assets/MacBook_Air_15-removebg-preview.webp",
       title: "MacBook Air.",
     },
     {
       name: "Accessories",
-      href: "/electronics/accessories",
+      href: "/category/Accessories",
       imgSrc: "/assets/Sony_WH-1000XM5-removebg-preview.webp",
       title: "Headphone.",
     },
   ];
   const electronics = [
-    { name: "Phone", href: "/electronics/phones", icon: TabletSmartphone },
-    { name: "Laptop", href: "/electronics/laptops", icon: Laptop },
+    { name: "Phone", href: "/category/Phone", icon: TabletSmartphone },
+    { name: "Laptop", href: "/category/Accessories", icon: Laptop },
     {
       name: "Accessories",
-      href: "/electronics/accessories",
+      href: "/category/Accessories",
       icon: MonitorSmartphone,
     },
   ];
@@ -202,14 +202,29 @@ const NewNavBar = () => {
                     {isClothNavOpen && (
                       <div>
                         {clothing.map((item, index) => (
-                          <div key={index}>
-                            <div className="flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
+                          <div key={index} className="space-y-2">
+                            {/* <div className="group flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <item.icon
                                 aria-hidden="true"
                                 className="size-6 text-gray-600 group-hover:text-indigo-600"
                               />
-                              <Link href={item.href}>{item.name}</Link>
-                            </div>
+                              <Link
+                                href={`/category/${item.name}`}
+                                className="w-full border"
+                              >
+                                {item.name}
+                              </Link>
+                            </div> */}
+                            <Link
+                              href={`/category/${item.href}`}
+                              className="group flex bg-red-200 hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base font-semibold text-gray-900"
+                            >
+                              <item.icon
+                                aria-hidden="true"
+                                className="size-6 text-red-600 group-hover:text-indigo-600"
+                              />
+                              <span>{item.name}</span>
+                            </Link>
                           </div>
                         ))}
                       </div>
@@ -219,7 +234,7 @@ const NewNavBar = () => {
                         isElectronicsNavOpen ? `bg-gray-200` : ``
                       }  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200`}
                       onClick={() =>
-                        setIsElectronicsNavOpen(!isElectronicsNavOpen)
+                        setIsElectronicsNavOpen(true)
                       }
                     >
                       Electronics{" "}
@@ -233,23 +248,36 @@ const NewNavBar = () => {
                       <div>
                         {electronics.map((item, index) => (
                           <div key={index}>
-                            <div className="flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
+                            {/* <div className="flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <item.icon
                                 aria-hidden="true"
                                 className="size-6 text-gray-600 group-hover:text-indigo-600"
                               />
-                              <Link href={item.href}>{item.name}</Link>
-                            </div>
+                              <Link href={`/category/${item.name}`}>
+                                {item.name}
+                              </Link>
+                            </div> */}
+                            <Link
+                              href={`${item.href}`}
+                              className="group flex mb-2 bg-red-200 hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base font-semibold text-gray-900"
+                            >
+                              <item.icon
+                                aria-hidden="true"
+                                className="size-6 text-red-600 group-hover:text-indigo-600"
+                              />
+                              <span>{item.name}</span>
+                            </Link>
+                            {/* <Link href={item.href} className="w-full mb-2 bg-amber-400">{item.href}</Link> */}
                           </div>
                         ))}
                       </div>
                     )}
                     <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
-                      <Link href={"/login"}>About</Link>
+                      <Link href={"/about"}>About</Link>
                     </button>
 
                     <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
-                      <Link href={"/login"}>Contact</Link>
+                      <Link href={"/contact"}>Contact</Link>
                     </button>
                     {isLogin && (
                       <>
@@ -284,8 +312,6 @@ const NewNavBar = () => {
               </div>
             </>
           )}
-          {/* search box */}
-          {/* <Search className="hidden lg:flex order-2"/> */}
 
           {/* lg screen menu */}
           <div className="hidden lg:flex space-x-16 ">
@@ -315,7 +341,7 @@ const NewNavBar = () => {
                     <div className=" w-full">
                       {lgNavClothing.map((item, index) => (
                         <div key={index}>
-                          <Link href={item.href}>
+                          <Link href={`/category/${item.name}`}>
                             <div className="flex  hover:bg-gray-200 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <Image
                                 src={item.imgSrc}
@@ -357,7 +383,8 @@ const NewNavBar = () => {
                     <div className=" w-full">
                       {lgNavElectronics.map((item, index) => (
                         <div key={index}>
-                          <Link href={item.href}>
+                          {/* `/category/${cate.title}` item.name item.href*/}
+                          <Link href={`/category/${item.name}`}>
                             <div className="flex  hover:bg-gray-200 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
                               <Image
                                 src={item.imgSrc}
