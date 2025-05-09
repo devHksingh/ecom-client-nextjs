@@ -145,7 +145,7 @@ export default function Home() {
   ];
   
   return (
-    <div className="container bg-white">
+    <div className="container bg-white scroll-smooth">
       <div className=" mx-auto py-4">
         {/* <ImageCarousel items={carouselItems} autoSlideInterval={5000} /> */}
       </div>

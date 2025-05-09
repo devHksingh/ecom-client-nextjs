@@ -32,6 +32,7 @@ const NewNavBar = () => {
   const electronicsRef = useRef<HTMLDivElement | null>(null);
 
   useAuth();
+
   const dispatch = useAppDispatch();
   const userState = useAppSelector((state) => state.auth);
   // const openModal = () => setIsModalOpen(true);
@@ -85,15 +86,15 @@ const NewNavBar = () => {
   const handleLogout = () => {
     mutation.mutate();
   };
-  const clothing = [
-    { name: "Men", href: "/category/Men", icon: Shirt },
-    {
-      name: "Woman",
-      description: "formal Woman clothing",
-      href: "/category/Woman",
-      icon: Shirt,
-    },
-  ];
+  // const clothing = [
+  //   { name: "Men", href: "/category/Men", icon: Shirt },
+  //   {
+  //     name: "Woman",
+  //     description: "formal Woman clothing",
+  //     href: "/category/Woman",
+  //     icon: Shirt,
+  //   },
+  // ];
   const lgNavClothing = [
     {
       name: "Men",
@@ -128,15 +129,15 @@ const NewNavBar = () => {
       title: "Headphone.",
     },
   ];
-  const electronics = [
-    { name: "Phone", href: "/category/Phone", icon: TabletSmartphone },
-    { name: "Laptop", href: "/category/Accessories", icon: Laptop },
-    {
-      name: "Accessories",
-      href: "/category/Accessories",
-      icon: MonitorSmartphone,
-    },
-  ];
+  // const electronics = [
+  //   { name: "Phone", href: "/category/Phone", icon: TabletSmartphone },
+  //   { name: "Laptop", href: "/category/Accessories", icon: Laptop },
+  //   {
+  //     name: "Accessories",
+  //     href: "/category/Accessories",
+  //     icon: MonitorSmartphone,
+  //   },
+  // ];
   return (
     <header className=" bg-white">
       <div className=" container mx-auto">
@@ -182,14 +183,14 @@ const NewNavBar = () => {
           {/* mobile menu */}
           {mobileMenuOpen && (
             <>
-              <div className="fixed inset-0 top-20  z-100  bg-white lg:hidden">
+              <div className="fixed inset-0 top-20  z-100  bg-white lg:hidden ">
                 <div className="divide-y divide-gray-500/10 border">
                   <div className="space-y-2 py-6">
                     <button
                       className={`group ${
                         isClothNavOpen ? `bg-gray-200` : ``
                       }  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-100`}
-                      onClick={() => setIsClothNavOpen(!isClothNavOpen)}
+                      // onClick={() => setIsClothNavOpen(!isClothNavOpen)}
                     >
                       Clothing{" "}
                       <ChevronDown
@@ -199,43 +200,32 @@ const NewNavBar = () => {
                         }`}
                       />
                     </button>
-                    {isClothNavOpen && (
-                      <div>
-                        {clothing.map((item, index) => (
-                          <div key={index} className="space-y-2">
-                            {/* <div className="group flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
-                              <item.icon
-                                aria-hidden="true"
-                                className="size-6 text-gray-600 group-hover:text-indigo-600"
-                              />
-                              <Link
-                                href={`/category/${item.name}`}
-                                className="w-full border"
-                              >
-                                {item.name}
-                              </Link>
-                            </div> */}
-                            <Link
-                              href={`/category/${item.href}`}
-                              className="group flex bg-red-200 hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base font-semibold text-gray-900"
-                            >
-                              <item.icon
-                                aria-hidden="true"
-                                className="size-6 text-red-600 group-hover:text-indigo-600"
-                              />
-                              <span>{item.name}</span>
-                            </Link>
-                          </div>
-                        ))}
+                    <div className=" ml-8 flex flex-col gap-2">
+                      <div onClick={() => setMobileMenuOpen(false)}>
+                        <Link
+                          href={`/category/Men`}
+                          className="flex items-center gap-2 text-lg"
+                        >
+                          <Shirt className="size-6 text-gray-600 " />
+                          Men
+                        </Link>
                       </div>
-                    )}
+                      <div onClick={() => setMobileMenuOpen(false)}>
+                        <Link
+                          href={`/category/Woman`}
+                          className="flex items-center gap-2 text-lg"
+                        >
+                          <Shirt className="size-6 text-gray-600 " />
+                          Women
+                        </Link>
+                      </div>
+                    </div>
+
                     <button
                       className={`group ${
                         isElectronicsNavOpen ? `bg-gray-200` : ``
                       }  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200`}
-                      onClick={() =>
-                        setIsElectronicsNavOpen(true)
-                      }
+                      // onClick={() => setIsElectronicsNavOpen(true)}
                     >
                       Electronics{" "}
                       <ChevronDown
@@ -244,34 +234,36 @@ const NewNavBar = () => {
                         }`}
                       />
                     </button>
-                    {isElectronicsNavOpen && (
-                      <div>
-                        {electronics.map((item, index) => (
-                          <div key={index}>
-                            {/* <div className="flex hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 ">
-                              <item.icon
-                                aria-hidden="true"
-                                className="size-6 text-gray-600 group-hover:text-indigo-600"
-                              />
-                              <Link href={`/category/${item.name}`}>
-                                {item.name}
-                              </Link>
-                            </div> */}
-                            <Link
-                              href={`${item.href}`}
-                              className="group flex mb-2 bg-red-200 hover:bg-gray-100 w-full items-center justify-start gap-2 rounded-lg py-2 pr-3.5 pl-3 text-base font-semibold text-gray-900"
-                            >
-                              <item.icon
-                                aria-hidden="true"
-                                className="size-6 text-red-600 group-hover:text-indigo-600"
-                              />
-                              <span>{item.name}</span>
-                            </Link>
-                            {/* <Link href={item.href} className="w-full mb-2 bg-amber-400">{item.href}</Link> */}
-                          </div>
-                        ))}
+                    <div className=" ml-8 flex flex-col gap-2">
+                      <div onClick={() => setMobileMenuOpen(false)}>
+                        <Link
+                          href={`/category/Phone`}
+                          className="flex items-center gap-2 text-lg text-stone-900"
+                        >
+                          <TabletSmartphone className="size-6 text-gray-600 " />
+                          Phone
+                        </Link>
                       </div>
-                    )}
+                      <div onClick={() => setMobileMenuOpen(false)}>
+                        <Link
+                          href={`/category/Laptop`}
+                          className="flex items-center gap-2 text-lg"
+                        >
+                          <Laptop className="size-6 text-gray-600 " />
+                          Laptop
+                        </Link>
+                      </div>
+                      <div onClick={() => setMobileMenuOpen(false)}>
+                        <Link
+                          href={`/category/Accessories`}
+                          className="flex items-center gap-2 text-lg"
+                        >
+                          <MonitorSmartphone className="size-6 text-gray-600 " />
+                          Accessories
+                        </Link>
+                      </div>
+                    </div>
+
                     <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
                       <Link href={"/about"}>About</Link>
                     </button>
@@ -286,6 +278,9 @@ const NewNavBar = () => {
                         </button>
                         <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
                           <Link href={"/wishList"}>Wishlist</Link>
+                        </button>
+                        <button className="group  flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-200">
+                          <Link href={"/orders"}>My Orders</Link>
                         </button>
                       </>
                     )}
@@ -428,6 +423,12 @@ const NewNavBar = () => {
                       <Link href={"/wishList"}>wishlist</Link>
                     </button>
                   </div>
+                  {/* orders btn */}
+                  <div className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 hover:border-b-1 hover:border-gray-600">
+                    <button className=" capitalize p-1 rounded-2xl px-2">
+                      <Link href={"/orders"}>My Orders</Link>
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -460,3 +461,7 @@ const NewNavBar = () => {
 };
 
 export default NewNavBar;
+
+/*
+
+*/
