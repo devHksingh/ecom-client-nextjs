@@ -8,7 +8,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../../components/ui/accordion";
 import useAuth from "@/hook/useAuth";
 
 import { homePageProduct, userCustomizeProduct } from "@/http/api";
