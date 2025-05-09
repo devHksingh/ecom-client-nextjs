@@ -145,8 +145,6 @@ const CartPage = () => {
     }
   }, [data, dispatch]);
 
-
-
   useEffect(() => {
     function synclocalstorageCart() {
       const loginUserCart = JSON.parse(
@@ -389,125 +387,132 @@ const CartPage = () => {
 
   return (
     <div className=" container">
-      <div aria-label="Breadcrumb" className="mt-16">
-              <ol
-                role="list"
-                className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
-              >
-                <li>
-                  <Link
-                    href={"/"}
-                    className="font-medium text-stone-800 hover:cursor-pointer"
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li className="text-stone-400">\</li>
-                <li>
-                  <Link
-                    href={`/cart`}
-                    className="font-medium capitalize text-stone-600 hover:cursor-pointer"
-                  >
-                    Cart
-                  </Link>
-                </li>
-              </ol>
-            </div>
-      {cartProducts.length > 0 && (
-        <div className="mt-16 flex flex-col lg:flex-row justify-between">
-          <ul
+      <div className="min-h-screen">
+        <div aria-label="Breadcrumb" className="mt-16">
+          <ol
             role="list"
-            className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+            className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
           >
-            {cartProducts.map((item, index) => (
-              <li key={index}>
-                <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                  <Image
-                    src={item.product.image}
-                    alt={item.product.title}
-                    width={50}
-                    height={50}
-                    priority
-                    className="size-full object-contain"
-                  />
-                </div>
-                <div className="ml-4 flex flex-1 flex-col">
-                  <div>
-                    <div className="flex justify-between text-base font-medium text-gray-900">
-                      <h3>
-                        <Link href={`/products/${item.product._id}`}>
-                          {item.product.title}
-                        </Link>
-                      </h3>
-                      <p className="ml-4">
-                        {" "}
-                        {formatPrice(item.product.price, item.product.currency)}
+            <li>
+              <Link
+                href={"/"}
+                className="font-medium text-stone-800 hover:cursor-pointer"
+              >
+                Home
+              </Link>
+            </li>
+            <li className="text-stone-400">\</li>
+            <li>
+              <Link
+                href={`/cart`}
+                className="font-medium capitalize text-stone-600 hover:cursor-pointer"
+              >
+                Cart
+              </Link>
+            </li>
+          </ol>
+        </div>
+        {cartProducts.length > 0 && (
+          <div className="mt-16 flex flex-col lg:flex-row justify-between">
+            <ul
+              role="list"
+              className="-my-6 divide-y divide-gray-200 space-y-2 lg:w-1/2  p-2"
+            >
+              {cartProducts.map((item, index) => (
+                <li key={index}>
+                  <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                    <Image
+                      src={item.product.image}
+                      alt={item.product.title}
+                      width={50}
+                      height={50}
+                      priority
+                      className="size-full object-contain"
+                    />
+                  </div>
+                  <div className="ml-4 flex flex-1 flex-col">
+                    <div>
+                      <div className="flex justify-between text-base font-medium text-gray-900">
+                        <h3>
+                          <Link href={`/products/${item.product._id}`}>
+                            {item.product.title}
+                          </Link>
+                        </h3>
+                        <p className="ml-4">
+                          {" "}
+                          {formatPrice(
+                            item.product.price,
+                            item.product.currency
+                          )}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {item.product.brand}
                       </p>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.product.brand}
-                    </p>
-                  </div>
-                  <div className="flex flex-1 items-end justify-between text-sm mb-4">
-                    <p className="text-gray-500">Qty {item.quantity}</p>
+                    <div className="flex flex-1 items-end justify-between text-sm mb-4">
+                      <p className="text-gray-500">Qty {item.quantity}</p>
 
-                    <div className="flex">
-                      <button
-                        type="button"
-                        className="font-medium text-indigo-600 hover:text-indigo-500"
-                        onClick={() => handleRemoveProduct(item.product._id)}
-                      >
-                        Remove
-                      </button>
+                      <div className="flex">
+                        <button
+                          type="button"
+                          className="font-medium text-indigo-600 hover:text-indigo-500"
+                          onClick={() => handleRemoveProduct(item.product._id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   </div>
+                </li>
+              ))}
+            </ul>
+            <div className="lg:w-[42%] mt-6 space-y-6">
+              <h3 className="text-gray-900 font-medium text-xl">
+                Order summary
+              </h3>
+              <div className="space-y-4 divide-y-2">
+                <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                  <p className="">Total Items</p>
+                  <p>{totalQuantity}</p>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <div className="lg:w-[42%] mt-6 space-y-6">
-            <h3 className="text-gray-900 font-medium text-xl">Order summary</h3>
-            <div className="space-y-4 divide-y-2">
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p className="">Total Items</p>
-                <p>{totalQuantity}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Subtotal</p>
-                <p>$ {totalPrice}</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Shipping estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Tax estimate</p>
-                <p>$ 0</p>
-              </div>
-              <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
-                <p>Order total</p>
-                <p>$ {totalPrice}</p>
-              </div>
+                <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                  <p>Subtotal</p>
+                  <p>$ {totalPrice}</p>
+                </div>
+                <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                  <p>Shipping estimate</p>
+                  <p>$ 0</p>
+                </div>
+                <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                  <p>Tax estimate</p>
+                  <p>$ 0</p>
+                </div>
+                <div className="flex justify-between text-base font-medium text-gray-900 pb-2">
+                  <p>Order total</p>
+                  <p>$ {totalPrice}</p>
+                </div>
 
-              <Button className="w-full mt-4 bg-indigo-500 hover:bg-indigo-600  text-md">
-                <Link href={"/checkout"}>CheckOut</Link>
-              </Button>
+                <Button className="w-full mt-4 bg-indigo-500 hover:bg-indigo-600  text-md">
+                  <Link href={"/checkout"}>CheckOut</Link>
+                </Button>
+              </div>
+              <p className="mt-2 text-md">
+                <span className="font-bold">Note:</span> Order price is
+                calculated on dollar currency{" "}
+              </p>
             </div>
-            <p className="mt-2 text-md">
-              <span className="font-bold">Note:</span> Order price is calculated
-              on dollar currency{" "}
-            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {cartState.length === 0 && cartProducts.length === 0 && (
-        <div className="mt-16">
-          <div className="text-center text-2xl text-red-500">
-            No Product in cart
+        {cartState.length === 0 && cartProducts.length === 0 && (
+          <div className="mt-16">
+            <div className="text-center text-2xl text-red-500">
+              No Product in cart
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

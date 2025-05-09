@@ -48,7 +48,7 @@ export default function OrderPage() {
         sessionStorage.removeItem("user");
         sessionStorage.setItem("user", JSON.stringify(updatedUserData));
       }
-      setUserOrders(order)
+      setUserOrders(order);
     }
   }, [data]);
   if (isLoading) {
@@ -80,8 +80,9 @@ export default function OrderPage() {
 
   return (
     <div className="container">
-        {userOrders && (<ListOfOrders orders={userOrders} />)}
-        
+      <div className="min-h-screen">
+        {userOrders && <ListOfOrders orders={userOrders} />}
+      </div>
     </div>
-  )
+  );
 }

@@ -8,6 +8,7 @@ import "../globals.css";
 
 
 import NewNavBar from "@/components/NewNavBar";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +45,7 @@ export default function RootLayout({
      
      <NewNavBar/>
       {children}
-     
+      <Footer/>
     </section>
     
   );

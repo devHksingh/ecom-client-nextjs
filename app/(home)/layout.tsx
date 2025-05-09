@@ -10,6 +10,7 @@ import "../globals.css";
 // import QueryProvider from "./QueryProvider";
 // import NavBar from "@/components/NavBar";
 import NewNavBar from "@/components/NewNavBar";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,10 +53,11 @@ export default function RootLayout({
       {/* <StoreProvider > */}
       {/* <QueryProvider> */}
       {/* <NavBar /> */}
-      <NewNavBar/>
+      <NewNavBar />
       {children}
       {/* </QueryProvider> */}
       {/* </StoreProvider> */}
+      <Footer />
     </section>
     // </html>
   );
