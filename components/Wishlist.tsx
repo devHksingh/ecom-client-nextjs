@@ -5,7 +5,7 @@ import React from 'react'
 
 const Wishlist = () => {
     const store = useAppStore()
-        const {wishList} = store.getState()
+    const {wishList} = store.getState()
   return (
     
     <div className='relative '>
