@@ -73,8 +73,8 @@ export default async function CategoryProductPage({
         total={apiData.total}
         totalPage={apiData.totalPages}
         currentPage={apiData.currentPage}
-        prevPage={apiData.prevPage}
-        nextPage={apiData.nextPage}
+        // prevPage={apiData.prevPage}
+        // nextPage={apiData.nextPage}
         category={category}
       />
     </div>

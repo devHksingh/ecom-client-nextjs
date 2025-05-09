@@ -14,8 +14,8 @@ interface ProductPaginationProps {
   total: number;
   totalPage: number;
   currentPage: number;
-  prevPage: number;
-  nextPage: number;
+  // prevPage: number;
+  // nextPage: number;
 }
 
 const ProductPagination = ({
@@ -25,8 +25,8 @@ const ProductPagination = ({
   total,
   totalPage,
   currentPage,
-  prevPage,
-  nextPage,
+  // prevPage,
+  // nextPage,
   category,
 }: ProductPaginationProps) => {
   const [products, setProducts] = useState(initialProducts);
@@ -37,10 +37,13 @@ const ProductPagination = ({
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(currentPage);
   //   const [prevPageIndex, setPrevPageIndex] = useState<number | null>(prevPage);
   //   const [nextPageIndex, setNextPageIndex] = useState<number | null>(nextPage);
-  const [productCategory, setProductCategory] = useState<string>(category);
+  const [productCategory, ] = useState<string>(category);
+
+  
 
   // Fetch products data
-  const { data, isLoading, isError, error } = useQuery({
+  // isError, error
+  const { data, isLoading,  } = useQuery({
     queryKey: ["Category", pageLimit, pageSkip, productCategory],
     queryFn: () =>
       fetchProductByCategoryWithLimit({
