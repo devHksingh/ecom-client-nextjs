@@ -101,11 +101,11 @@ const ProductPagination = ({
   };
 
   return (
-    <div className="container relative">
+    <div className="container relative ">
       <ListOfProduct products={products} headTtitle={category} />
 
-      <div className="absolute bottom-8 right-1/2 translate-x-1/2">
-        <div className="flex justify-between items-center gap-4">
+      <div className="absolute  lg:bottom-8 right-1/2 translate-x-1/2 w-full lg:w-1/2 ">
+        <div className="flex  justify-between items-center gap-4 mb-8">
           <span className="text-copy-primary/90">
             Total products {totalProducts}
           </span>

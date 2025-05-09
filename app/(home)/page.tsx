@@ -225,7 +225,7 @@ export default function Home() {
       {/* faq */}
       <section className="mb-16">
         <h2 className="text-4xl lg:text-4xl  font-manrope text-center font-bold text-gray-900 leading-[3.25rem] mb-6 lg:mb-12">Frequently asked questions</h2>
-        <Accordion type="single" collapsible className="w-1/2 mx-auto ">
+        <Accordion type="single" collapsible className="w-full lg:w-1/2  mx-auto ">
           <AccordionItem value="item-1">
             <AccordionTrigger className="text-2xl">
               How can I track my order status?
