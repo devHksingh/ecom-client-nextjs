@@ -22,7 +22,8 @@ export default function Home() {
   const dispatch = useAppDispatch();
   useAuth();
   const toast = useToast();
-  const { data, isLoading, isError, error } = useQuery({
+  // isLoading, isError, error
+  const { data,  } = useQuery({
     queryKey: ["homePageProducts"],
     queryFn: homePageProduct,
     staleTime: 40 * 60 * 1000,
