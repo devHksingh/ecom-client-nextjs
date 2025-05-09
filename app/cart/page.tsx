@@ -104,39 +104,6 @@ const CartPage = () => {
     enabled: fetchCartproduct && isLogin,
   });
 
-  // if (data as AxiosResponse) {
-  //   console.log("getCart---", data);
-  //   const cartProducts: CartItemsPostReqProps[] = [];
-
-  //   if (data?.data) {
-  //     const { isAccessTokenExp, cart } = data.data;
-  //     if (isAccessTokenExp) {
-  //       const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-  //       const { accessToken: newAccessToken } = data.data;
-  //       dispatch(updateAccessToken({ accessToken: newAccessToken }));
-  //       const { email, id, name, refreshToken } = user;
-  //       const updatedUserData = {
-  //         accessToken: newAccessToken,
-  //         email,
-  //         id,
-  //         name,
-  //         refreshToken,
-  //       };
-  //       sessionStorage.removeItem("user");
-  //       sessionStorage.setItem("user", JSON.stringify(updatedUserData));
-  //     }
-  //     const { items, totalAmount, totalItems } = cart;
-  //     items.map((item: CartItemsPostReqProps) => {
-  //       const product = item.product;
-  //       const quantity = item.quantity;
-  //       cartProducts.push({ product, quantity });
-  //     });
-  //     setCartProducts(cartProducts);
-  //     setTotalPrice(totalAmount);
-  //     setTotalQuantity(totalItems);
-  //   }
-  // }
-
   useEffect(() => {
     if (data as AxiosResponse) {
       const cartProducts: CartItemsPostReqProps[] = [];
@@ -178,11 +145,7 @@ const CartPage = () => {
     }
   }, [data, dispatch]);
 
-  // useEffect(() => {
-  //   const { products, needSync } = synclocalstorageCart();
-  //   setCartStateProducts(products);
-  //   setNeedSync(needSync);
-  // }, []);
+
 
   useEffect(() => {
     function synclocalstorageCart() {
