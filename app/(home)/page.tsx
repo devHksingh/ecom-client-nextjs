@@ -8,7 +8,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 import useAuth from "@/hook/useAuth";
 
 import { homePageProduct, userCustomizeProduct } from "@/http/api";
@@ -27,9 +27,9 @@ export default function Home() {
   const userState = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   useAuth();
-  
+
   // isLoading, isError, error
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["homePageProducts"],
     queryFn: homePageProduct,
     staleTime: 40 * 60 * 1000,
@@ -143,7 +143,7 @@ export default function Home() {
       color: "bg-green-100",
     },
   ];
-  
+
   return (
     <div className="container bg-white scroll-smooth">
       <div className=" mx-auto py-4">
@@ -204,28 +204,92 @@ export default function Home() {
         </section>
       )}
       <section className="">
-        <ListOfProduct
-          products={mostBoughtProduct}
-          headTtitle="Trending Products"
-        />
+        {isLoading ? (
+          <>
+            <div className="animate-pulse rounded-md border p-4 shadow-sm">
+              <div className="h-48 bg-gray-200 rounded mb-4" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+            </div>
+          </>
+        ) : isError ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-md text-center">
+            <p>⚠️ Failed to load product details. Please try again.</p>
+          </div>
+        ) : (
+          <>
+            <ListOfProduct
+              products={mostBoughtProduct}
+              headTtitle="Trending Products"
+            />
+          </>
+        )}
       </section>
+      {/* mostExpensiveProduct */}
       <section className="">
+        {isLoading ? (
+          <>
+            <div className="animate-pulse rounded-md border p-4 shadow-sm">
+              <div className="h-48 bg-gray-200 rounded mb-4" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+            </div>
+          </>
+        ) : isError ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-md text-center">
+            <p>⚠️ Failed to load product details. Please try again.</p>
+          </div>
+        ) : (
+          <>
+            <ListOfProduct
+              products={mostExpensiveProduct}
+              headTtitle="Luxury Picks: The Finest on Display"
+            />
+          </>
+        )}
+      </section>
+      {/* <section className="">
+      
         <ListOfProduct
           products={mostExpensiveProduct}
           headTtitle="Luxury Picks: The Finest on Display"
         />
-      </section>
+      </section> */}
       <section className="">
+        {isLoading ? (
+          <div className="animate-pulse rounded-md border p-4 shadow-sm">
+            <div className="h-48 bg-gray-200 rounded mb-4" />
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+          </div>
+        ) : isError ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-md text-center">
+            <p>⚠️ Failed to load product details. Please try again.</p>
+          </div>
+        ) : (
+          <ListOfProduct
+            products={leastExpensiveProduct}
+            headTtitle="Great Deals, Small Price"
+          />
+        )}
+      </section>
+      {/* <section className="">
         <ListOfProduct
           products={leastExpensiveProduct}
           headTtitle="Great Deals, Small Price"
         />
-      </section>
+      </section> */}
 
       {/* faq */}
       <section className="mb-16">
-        <h2 className="text-4xl lg:text-4xl  font-manrope text-center font-bold text-gray-900 leading-[3.25rem] mb-6 lg:mb-12">Frequently asked questions</h2>
-        <Accordion type="single" collapsible className="w-full lg:w-1/2  mx-auto ">
+        <h2 className="text-4xl lg:text-4xl  font-manrope text-center font-bold text-gray-900 leading-[3.25rem] mb-6 lg:mb-12">
+          Frequently asked questions
+        </h2>
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full lg:w-1/2  mx-auto "
+        >
           <AccordionItem value="item-1">
             <AccordionTrigger className="text-2xl">
               How can I track my order status?
@@ -235,14 +299,16 @@ export default function Home() {
               nav bar.
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-2" >
-            <AccordionTrigger className="text-2xl">How long does shipping take?</AccordionTrigger>
-            <AccordionContent  className="text-lg">
+          <AccordionItem value="item-2">
+            <AccordionTrigger className="text-2xl">
+              How long does shipping take?
+            </AccordionTrigger>
+            <AccordionContent className="text-lg">
               Standard shipping usually takes 8 to 14 business days. Express
               shipping options are available at checkout for faster delivery.
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-3" >
+          <AccordionItem value="item-3">
             <AccordionTrigger className="text-2xl">
               Do you offer international shipping?
             </AccordionTrigger>
@@ -266,4 +332,3 @@ export default function Home() {
     </div>
   );
 }
-
