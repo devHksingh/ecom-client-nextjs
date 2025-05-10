@@ -157,8 +157,10 @@ const WishlistPage = () => {
     }
     return (
       <div className=" container">
-        <div className="flex justify-center items-center h-full text-red-500 text-lg">
-          {errorMessage}
+        <div className="min-h-screen">
+          <div className="flex justify-center items-center h-full text-red-500 text-lg">
+            {errorMessage}
+          </div>
         </div>
       </div>
     );
@@ -166,45 +168,47 @@ const WishlistPage = () => {
 
   return (
     <div className="container">
-      <div aria-label="Breadcrumb" className="mt-16">
-        <ol
-          role="list"
-          className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
-        >
-          <li>
-            <Link
-              href={"/"}
-              className="font-medium text-stone-800 hover:cursor-pointer"
-            >
-              Home
-            </Link>
-          </li>
-          <li className="text-stone-400">\</li>
-          <li>
-            <Link
-              href={`/wishList`}
-              className="font-medium capitalize text-stone-600 hover:cursor-pointer"
-            >
-              wishList
-            </Link>
-          </li>
-        </ol>
-      </div>
-      {data && (
-        <div className=" container">
-          {wishListData.length > 0 && (
-            <ListWishlistProduct products={wishListData} />
-          )}
-
-          {wishListReduxState.length === 0 && wishListData.length === 0 && (
-            <div className="mt-16">
-              <div className="text-center text-2xl text-red-500">
-                No Product in wishList
-              </div>
-            </div>
-          )}
+      <div className="min-h-screen">
+        <div aria-label="Breadcrumb" className="mt-16">
+          <ol
+            role="list"
+            className="flex items-center max-w-2xl gap-2 px-4 mx-auto sm:px-6 lg:max-w-7xl lg:px-8"
+          >
+            <li>
+              <Link
+                href={"/"}
+                className="font-medium text-stone-800 hover:cursor-pointer"
+              >
+                Home
+              </Link>
+            </li>
+            <li className="text-stone-400">\</li>
+            <li>
+              <Link
+                href={`/wishList`}
+                className="font-medium capitalize text-stone-600 hover:cursor-pointer"
+              >
+                wishList
+              </Link>
+            </li>
+          </ol>
         </div>
-      )}
+        {data && (
+          <div className=" container">
+            {wishListData.length > 0 && (
+              <ListWishlistProduct products={wishListData} />
+            )}
+
+            {wishListReduxState.length === 0 && wishListData.length === 0 && (
+              <div className="mt-16">
+                <div className="text-center text-2xl text-red-500">
+                  No Product in wishList
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
