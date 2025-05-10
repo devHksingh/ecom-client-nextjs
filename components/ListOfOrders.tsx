@@ -45,7 +45,7 @@ const ListOfOrders = ({ orders }: ListOfOrdersProps) => {
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">
           Order history
         </h2>
-        <p>Check the status of recent orderss and discover similar products.</p>
+        <p>Check the status of recent orderss.</p>
 
         <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
           {orders.map((order: OrderProps) => (
@@ -61,10 +61,7 @@ const ListOfOrders = ({ orders }: ListOfOrdersProps) => {
               <div className="mt-4 flex justify-between">
                 <div>
                   <h3 className="text-sm text-gray-900 truncate lg:w-[60%] font-medium">
-                    <Link
-                      href={`/orders/${order.trackingId}`}
-                      className=" "
-                    >
+                    <Link href={`/orders/${order.trackingId}`} className=" ">
                       <span aria-hidden="true" className="absolute inset-0 " />
                       {order.productDetail.name}
                     </Link>
