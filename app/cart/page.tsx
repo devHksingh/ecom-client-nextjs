@@ -378,8 +378,10 @@ const CartPage = () => {
     }
     return (
       <div className=" container">
-        <div className="flex justify-center items-center h-full text-red-500 text-lg">
-          {errorMessage}
+        <div className="min-h-screen">
+          <div className="flex justify-center items-center h-full text-red-500 text-lg">
+            {errorMessage}
+          </div>
         </div>
       </div>
     );
