@@ -82,7 +82,11 @@ export default function OrderPage() {
     <div className="container">
       <div className="min-h-screen">
         {userOrders && <ListOfOrders orders={userOrders} />}
-        {userOrders.length ===0 &&<div className="text-center mt-4 ">No orders have been placed yet</div>}
+        {userOrders.length === 0 && (
+          <div className="text-center mt-4 ">
+            No orders have been placed yet
+          </div>
+        )}
       </div>
     </div>
   );
