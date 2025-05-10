@@ -600,10 +600,13 @@ export default function CheckOutPage() {
   if (mutation.isError) {
     return (
       <div className="container">
-        <div className="mt-8 text-red-500 text-lg text-center p-2">
-          <p>
-            We are facing an error while loading your checkoutPage.Try it again!
-          </p>
+        <div className="min-h-screen">
+          <div className="mt-8 text-red-500 text-lg text-center p-2">
+            <p>
+              We are facing an error while loading your checkoutPage.Try it
+              again!
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -672,7 +675,7 @@ export default function CheckOutPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
-                       PlacedOn { formattedDate(item.orderPlaceOn)}
+                      PlacedOn {formattedDate(item.orderPlaceOn)}
                     </p>
                   </div>
                   <div className="flex-shrink-0 text-sm font-medium text-gray-900">
@@ -780,11 +783,10 @@ export default function CheckOutPage() {
                 <h3 className="text-lg font-medium text-gray-800">
                   Payment Type
                 </h3>
-                
               </div>
               <span className="font-medium text-indigo-600">
-                   COD (Cash on Delivery)
-                </span>
+                COD (Cash on Delivery)
+              </span>
             </div>
             <p className="mt-1 mb-4 text-md">
               <span className="font-bold">Note:</span> Order price is calculated
@@ -1139,47 +1141,3 @@ export default function CheckOutPage() {
     </div>
   );
 }
-
-/*
-<h2>Oops! Not Enough Items in Stock</h2>
-    0.check user is login => not => redirect to login page
-    1 get cart data from local storage and hit getStatusmultipleProduct
-    2.valid api respose
-    3.get user data from session storage 
-    4. validate user address 
-    */
-// const { data, isError, isLoading } = useQuery({
-//   queryKey: ["checkoutPage"],
-//   queryFn: () => getStatusmultipleProduct(userCartData),
-//   enabled: userCartData.length > 0,
-// });
-// useEffect(() => {
-//   if (data) {
-//     const {
-//       isAccessTokenExp,
-//       validProducts,
-//       invalidProducts,
-//       totalItems,
-//       totalPriceInDollar,
-//     } = data.data;
-// if (isAccessTokenExp) {
-//   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-//   const { accessToken: newAccessToken } = data.data;
-//   dispatch(updateAccessToken({ accessToken: newAccessToken }));
-//   const { email, id, name, refreshToken } = user;
-//   const updatedUserData = {
-//     accessToken: newAccessToken,
-//     email,
-//     id,
-//     name,
-//     refreshToken,
-//   };
-//   sessionStorage.removeItem("user");
-//   sessionStorage.setItem("user", JSON.stringify(updatedUserData));
-// }
-//     setValidProducts(validProducts);
-//     setInvalidProducts(invalidProducts);
-//     setTotalItems(totalItems);
-//     setTotalPriceInDollar(totalPriceInDollar);
-//   }
-// }, [data, dispatch]);

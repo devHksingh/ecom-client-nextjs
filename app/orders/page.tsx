@@ -69,10 +69,12 @@ export default function OrderPage() {
   if (isError) {
     return (
       <div className="container">
-        <div className="mt-8 text-red-500 text-lg text-center p-2">
-          <p>
-            We are facing an error while loading your order page.Try it again!
-          </p>
+        <div className="min-h-screen">
+          <div className="mt-8 text-red-500 text-lg text-center p-2">
+            <p>
+              We are facing an error while loading your order page.Try it again!
+            </p>
+          </div>
         </div>
       </div>
     );
